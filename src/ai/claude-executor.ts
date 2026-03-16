@@ -377,12 +377,38 @@ export async function runClaudePrompt(
   try {
     const mcpServers = buildMcpServers(agentName, sourceDir);
 
+    // Build env passthrough for SDK subprocess authentication
+    const passthroughVars = [
+      'HOME',
+      'ANTHROPIC_API_KEY',
+      'CLAUDE_CODE_OAUTH_TOKEN',
+      'CLAUDE_CODE_OAUTH_REFRESH_TOKEN',
+      'ANTHROPIC_BASE_URL',
+      'ANTHROPIC_AUTH_TOKEN',
+      'CLAUDE_CODE_USE_BEDROCK',
+      'AWS_REGION',
+      'AWS_BEARER_TOKEN_BEDROCK',
+      'CLAUDE_CODE_USE_VERTEX',
+      'CLOUD_ML_REGION',
+      'ANTHROPIC_VERTEX_PROJECT_ID',
+      'GOOGLE_APPLICATION_CREDENTIALS',
+      'ANTHROPIC_SMALL_MODEL',
+      'ANTHROPIC_MEDIUM_MODEL',
+      'ANTHROPIC_LARGE_MODEL',
+      'CLAUDE_CODE_MAX_OUTPUT_TOKENS',
+    ];
+    const sdkEnv: Record<string, string> = {};
+    for (const name of passthroughVars) {
+      if (process.env[name]) sdkEnv[name] = process.env[name]!;
+    }
+
     // Build SDK options
     const options: NonNullable<Parameters<typeof query>[0]['options']> = {
       model: actualModel,
       maxTurns: 50,
       mcpServers,
       systemPrompt: `You are a UAT testing agent (${agentName}). Session: ${sessionContext}. Write all deliverables to ${sourceDir}/deliverables/.`,
+      env: sdkEnv,
     };
 
     // Process the async message stream

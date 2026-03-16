@@ -6,6 +6,7 @@ import { Result, ok, err } from '../types/result.js';
 import { UATError } from './error-handling.js';
 import { ErrorCode } from '../types/errors.js';
 import { parseConfig } from '../config-parser.js';
+import { ensureValidToken } from '../utils/token-refresh.js';
 import type { ActivityLogger } from '../types/activity-logger.js';
 
 export async function runPreflightChecks(
@@ -28,7 +29,14 @@ export async function runPreflightChecks(
     }
   }
 
-  // 2. Validate API credentials
+  // 2. Ensure OAuth token is valid (refreshes from credentials file if expired)
+  try {
+    await ensureValidToken();
+  } catch {
+    // Log but don't fail — env vars may still be set directly
+  }
+
+  // 3. Validate API credentials
   const hasApiKey = !!process.env.ANTHROPIC_API_KEY;
   const hasOauth = !!process.env.CLAUDE_CODE_OAUTH_TOKEN;
   const hasBedrock = process.env.CLAUDE_CODE_USE_BEDROCK === '1';

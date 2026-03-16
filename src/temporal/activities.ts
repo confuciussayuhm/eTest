@@ -21,6 +21,7 @@ import { runPreflightChecks } from '../services/preflight.js';
 import { isErr } from '../types/result.js';
 import { toWorkflowSummary } from './summary-mapper.js';
 import { createActivityLogger } from './activity-logger.js';
+import { ensureValidToken } from '../utils/token-refresh.js';
 
 // ---------------------------------------------------------------------------
 // Activity input (threaded through every activity call)
@@ -59,6 +60,9 @@ async function runAgentActivity(
 ): Promise<AgentMetrics> {
   const logger = createActivityLogger(agentName);
   const ctx = Context.current();
+
+  // Ensure OAuth token is valid (refreshes from credentials file if expired)
+  await ensureValidToken();
 
   logger.info(`Starting agent: ${agentName}`, { webUrl: input.webUrl });
 

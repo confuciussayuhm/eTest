@@ -149,6 +149,26 @@ cmd_start() {
     exit 1
   fi
 
+  # Resolve Claude credentials file for OAuth token sharing
+  CLAUDE_CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
+  CLAUDE_CREDENTIALS_FILE="${CLAUDE_CONFIG_DIR}/.credentials.json"
+
+  if [ -z "$ANTHROPIC_API_KEY" ] && [ -z "$CLAUDE_CODE_OAUTH_TOKEN" ]; then
+    if [ -f "$CLAUDE_CREDENTIALS_FILE" ]; then
+      echo "Using Claude credentials from $CLAUDE_CREDENTIALS_FILE"
+      OAUTH_ACCESS=$(node -e '
+        const c = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+        process.stdout.write(c.claudeAiOauth?.accessToken || "");
+      ' "$CLAUDE_CREDENTIALS_FILE" 2>/dev/null) || true
+      OAUTH_REFRESH=$(node -e '
+        const c = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+        process.stdout.write(c.claudeAiOauth?.refreshToken || "");
+      ' "$CLAUDE_CREDENTIALS_FILE" 2>/dev/null) || true
+      [ -n "$OAUTH_ACCESS" ] && export CLAUDE_CODE_OAUTH_TOKEN="$OAUTH_ACCESS"
+      [ -n "$OAUTH_REFRESH" ] && export CLAUDE_CODE_OAUTH_REFRESH_TOKEN="$OAUTH_REFRESH"
+    fi
+  fi
+
   # Check for API key (Bedrock and router modes can bypass this)
   if [ -z "$ANTHROPIC_API_KEY" ] && [ -z "$CLAUDE_CODE_OAUTH_TOKEN" ]; then
     if [ "$CLAUDE_CODE_USE_BEDROCK" = "1" ]; then
@@ -192,7 +212,8 @@ cmd_start() {
       export ANTHROPIC_API_KEY="router-mode"
     else
       echo "ERROR: Set ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN in .env"
-      echo "       (or use CLAUDE_CODE_USE_BEDROCK=1 for AWS Bedrock,"
+      echo "       (or run 'claude login' to authenticate via OAuth,"
+      echo "        use CLAUDE_CODE_USE_BEDROCK=1 for AWS Bedrock,"
       echo "        CLAUDE_CODE_USE_VERTEX=1 for Google Vertex AI,"
       echo "        or ROUTER=true with OPENAI_API_KEY or OPENROUTER_API_KEY)"
       exit 1
