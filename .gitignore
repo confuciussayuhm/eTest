@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+mcp-server/node_modules/
+
+# Build output
+dist/
+mcp-server/dist/
+*.tsbuildinfo
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# Credentials
+credentials/
+
+# Runtime output
+audit-logs/
+test-results/
+sessions/
+deliverables/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temp
+tmp/
+.tmp/
+
+# npm
+.npm
+
+# Docker volumes (compose files are tracked)
+docker-data/

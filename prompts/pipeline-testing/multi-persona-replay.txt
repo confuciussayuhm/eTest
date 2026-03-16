@@ -1,0 +1,4 @@
+# Pipeline Test: Multi-Persona Replay
+Read multi_persona_record_deliverable.md.
+Navigate to {{WEB_URL}} using {{MCP_SERVER}} as secondary persona.
+Save a stub multi_persona_replay_deliverable.md with: "Pipeline test - persona replay complete. 1 journey replayed."

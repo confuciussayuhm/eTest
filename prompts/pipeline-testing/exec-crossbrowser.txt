@@ -1,0 +1,4 @@
+# Pipeline Test: Cross-Browser Exec
+Read crossbrowser_plan_deliverable.md.
+Navigate to {{WEB_URL}} using {{MCP_SERVER}}, verify page loads.
+Save a stub crossbrowser_exec_deliverable.md with: "Pipeline test - crossbrowser exec complete. 1 test: PASS."

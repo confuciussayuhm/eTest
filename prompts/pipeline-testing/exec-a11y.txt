@@ -1,0 +1,4 @@
+# Pipeline Test: Accessibility Exec
+Read a11y_plan_deliverable.md.
+Navigate to {{WEB_URL}} using {{MCP_SERVER}}, verify page loads.
+Save a stub a11y_exec_deliverable.md with: "Pipeline test - a11y exec complete. 1 test: PASS."

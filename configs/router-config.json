@@ -1,0 +1,8 @@
+{
+  "models": {
+    "small": "claude-haiku-4-5-20241022",
+    "medium": "claude-sonnet-4-20250514",
+    "large": "claude-opus-4-20250514"
+  },
+  "default_tier": "medium"
+}

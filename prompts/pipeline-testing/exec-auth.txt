@@ -1,0 +1,4 @@
+# Pipeline Test: Auth Exec
+Read auth_plan_deliverable.md.
+Navigate to {{WEB_URL}} using {{MCP_SERVER}}, verify page loads.
+Save a stub auth_exec_deliverable.md with: "Pipeline test - auth exec complete. 1 test: PASS."

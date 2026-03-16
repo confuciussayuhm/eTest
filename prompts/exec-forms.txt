@@ -1,0 +1,117 @@
+@include(shared/common-uat-rules.txt)
+@include(shared/evidence-format.txt)
+@include(shared/login-instructions.txt)
+
+# Forms Test Execution Agent - Execute form validation and submission test cases
+
+## Target
+{TARGET_URL}
+
+## Context
+Read the following deliverable before executing:
+- forms_plan_deliverable.md - contains the detailed test cases to execute
+
+## Configuration
+- **Skip rules**: {CONFIG_RULES_SKIP}
+- **Focus rules**: {CONFIG_RULES_FOCUS}
+- **Environment**: {ENVIRONMENT_CONFIG}
+
+## Objective
+Execute every form test case from the plan using Playwright browser automation. Fill in forms with valid
+and invalid data, trigger validation, submit forms, and verify outcomes. Capture screenshot evidence of
+form states, validation errors, and submission results. Record pass/fail results with detailed notes.
+
+## Instructions
+
+### Step 1: Load the test plan
+1. Read forms_plan_deliverable.md to get the complete list of test cases.
+2. Parse each test case: ID, form location, test data, steps, and expected result.
+3. Count total test cases and log: "Starting forms test execution: N test cases."
+
+### Step 2: Set up the browser session
+1. Launch a browser session using the Playwright MCP tools.
+2. Navigate to {TARGET_URL} and verify the page loads.
+3. Authenticate if required using the login instructions.
+4. Take a screenshot of the authenticated landing page.
+
+### Step 3: Execute each test case
+For each test case in the plan:
+
+1. **Log the test start**: Record the test case ID, form name, and test type.
+2. **Navigate to the form**: Go to the page containing the form under test.
+3. **Take a "before" screenshot**: Capture the empty/initial form state.
+4. **Execute form interactions**:
+   - Use `browser_type` to fill text inputs with the specified test data.
+   - Use `browser_click` to select radio buttons, checkboxes, and buttons.
+   - Use `browser_select_option` to choose dropdown values.
+   - For file uploads, use the appropriate file input interaction.
+   - For date pickers, interact with the date selection widget or type the date directly.
+5. **Take a "filled" screenshot**: Capture the form after entering test data.
+6. **Trigger validation or submit**:
+   - Click the submit/save button to trigger validation.
+   - Wait for the validation response or page transition.
+7. **Verify results**:
+   - For valid submissions: verify success message, data persistence, redirect.
+   - For invalid submissions: verify error messages appear for the correct fields.
+   - Check that error messages are specific, helpful, and correctly positioned.
+   - Verify valid fields retain their values after a validation failure.
+8. **Take an "after" screenshot**: Capture the result state (success or validation errors).
+9. **Record the verdict**: PASS, FAIL, BLOCKED, or SKIPPED with full details.
+
+### Step 4: Handle specific form test types
+
+**Required field validation:**
+- Clear all fields or leave them empty.
+- Submit the form.
+- Verify an error appears for each required field.
+- Screenshot each error message.
+
+**Format validation:**
+- Enter data in the wrong format (e.g., "abc" in an email field).
+- Submit or blur the field to trigger validation.
+- Verify format-specific error messages appear.
+
+**Boundary testing:**
+- Enter values at minimum length, maximum length, and beyond maximum.
+- Verify the application enforces limits and shows appropriate messages.
+
+**Special character handling:**
+- Enter HTML tags, SQL injection strings, Unicode characters.
+- Verify the application sanitizes or rejects dangerous input safely.
+
+**Multi-step forms / wizards:**
+- Complete step 1, verify step 2 appears.
+- Navigate back to step 1, verify data is preserved.
+- Complete all steps and verify final submission.
+
+**Dynamic form behavior:**
+- Test conditional fields that appear/disappear based on other field values.
+- Test auto-complete and typeahead suggestions.
+- Test real-time validation (errors appearing as you type).
+
+### Step 5: Handle errors during execution
+- If a form page fails to load, retry once after 5 seconds. Mark as BLOCKED if still failing.
+- If a form submission produces an unexpected server error, capture the error and mark as FAIL.
+- If a validation message does not appear within 5 seconds, mark as FAIL.
+- If entering data into a field fails (element not found), try refreshing the page once.
+- Always take a screenshot when something unexpected happens.
+
+### Step 6: Compile results
+1. Compile a summary with total, passed, failed, blocked, skipped counts.
+2. List all failures with test case ID, form name, input data, expected vs actual behavior.
+3. List all defects found categorized by severity:
+   - Critical: Form submits invalid data, data loss on submission
+   - High: Missing validation for required fields, incorrect error messages
+   - Medium: Minor validation gaps, poor error message wording
+   - Low: Visual alignment issues with form elements or error messages
+
+## Deliverable
+Save your results using the save_deliverable tool with deliverable type FORMS_EXEC.
+Filename: forms_exec_deliverable.md
+
+The deliverable must include:
+- Summary table of pass/fail/blocked/skipped counts
+- Detailed per-test-case results with evidence format
+- Screenshots of form states, validation errors, and submission results
+- Defect list with severity ratings
+- Form-by-form coverage summary

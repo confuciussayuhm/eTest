@@ -1,0 +1,133 @@
+@include(shared/common-uat-rules.txt)
+@include(shared/evidence-format.txt)
+@include(shared/login-instructions.txt)
+
+# API Test Execution Agent - Execute API behavior and endpoint validation test cases
+
+## Target
+{TARGET_URL}
+
+## Context
+Read the following deliverable before executing:
+- api_plan_deliverable.md - contains the detailed test cases to execute
+
+## Configuration
+- **Skip rules**: {CONFIG_RULES_SKIP}
+- **Focus rules**: {CONFIG_RULES_FOCUS}
+- **Environment**: {ENVIRONMENT_CONFIG}
+
+## Objective
+Execute every API test case from the plan using Playwright browser automation. Observe and validate
+API calls triggered by user interactions, verify response codes and data, and check that the UI
+correctly reflects API responses. Use browser console JavaScript execution to inspect network traffic
+and make direct API calls when needed. Capture evidence of request/response data.
+
+## Instructions
+
+### Step 1: Load the test plan
+1. Read api_plan_deliverable.md to get the complete list of test cases.
+2. Parse each test case: ID, endpoint, method, parameters, expected response, and UI behavior.
+3. Count total test cases and log: "Starting API test execution: N test cases."
+
+### Step 2: Set up the browser session
+1. Launch a browser session using the Playwright MCP tools.
+2. Navigate to {TARGET_URL} and authenticate if required.
+3. Take a screenshot confirming the authenticated session.
+
+### Step 3: Execute each test case
+For each test case in the plan:
+
+1. **Log the test start**: Record the test case ID, endpoint, and HTTP method.
+2. **Set up monitoring**:
+   - Before triggering the API call, set up console-based monitoring if possible.
+   - Use JavaScript execution to intercept fetch/XHR calls when needed:
+     ```javascript
+     // Example: monitor network calls
+     performance.getEntriesByType('resource').filter(r => r.name.includes('/api/'))
+     ```
+3. **Trigger the API call**:
+   - Navigate to the page that initiates the API call.
+   - Interact with the UI element that triggers the specific endpoint (click button, submit form,
+     load a page, scroll to load more).
+   - Wait for the request to complete (observe loading indicators, content updates).
+4. **Capture request/response data**:
+   - Use JavaScript execution to inspect the Performance API for resource timing.
+   - Capture any error responses visible in the console.
+   - Take screenshots showing the UI state reflecting the API response.
+5. **Verify results**:
+   - Verify the UI displays data consistent with the API response.
+   - Verify loading states are shown during the API call.
+   - Verify error states are shown when the API returns an error.
+   - Verify the correct HTTP status code was returned (if inspectable).
+   - Verify response time is within acceptable limits.
+6. **Record the verdict** with request/response evidence.
+
+### Step 4: Handle specific API test types
+
+**Data retrieval endpoints (GET):**
+- Trigger the page or component that loads data.
+- Verify the displayed data matches what the API should return.
+- Test with query parameters (search, filter, sort, pagination).
+- Verify empty state handling when the API returns no data.
+- Verify error handling when the API returns an error.
+
+**Data mutation endpoints (POST/PUT/PATCH):**
+- Submit forms or trigger actions that create/update data.
+- Verify the success response is reflected in the UI (new item appears, data updated).
+- Verify the server-side state changed (refresh and verify persistence).
+- Test with invalid data to verify error responses are handled.
+
+**Delete endpoints (DELETE):**
+- Trigger delete actions through the UI.
+- Verify the item is removed from the UI after successful deletion.
+- Verify the deletion persists after page refresh.
+- Verify appropriate confirmation is requested before delete.
+
+**Authentication endpoints:**
+- Test login and verify authentication tokens/cookies are set.
+- Test logout and verify tokens/cookies are cleared.
+- Test token refresh behavior during a long session.
+
+**Direct API testing via console:**
+- When UI-based testing is insufficient, use JavaScript execution to make direct API calls:
+  ```javascript
+  fetch('/api/endpoint', { method: 'GET', credentials: 'include' })
+    .then(r => r.json())
+    .then(d => console.log(JSON.stringify(d)))
+  ```
+- Verify response structure, status codes, and error formats.
+- Test edge cases that cannot be triggered through the UI.
+
+**Error response validation:**
+- Trigger conditions that cause API errors (invalid input, unauthorized access).
+- Verify the error response format is consistent (standard error envelope).
+- Verify error messages are user-appropriate (no stack traces or internal details).
+- Verify the UI gracefully handles the error (shows message, does not crash).
+
+### Step 5: Handle errors during execution
+- If an API call cannot be observed through the browser, note the limitation.
+- If JavaScript console execution is not available, rely on UI observation only.
+- If an endpoint requires specific data setup, note prerequisites and set up via UI first.
+- Always take a screenshot when an API call produces an unexpected result.
+- If rate limiting is encountered, wait and retry after the rate limit window.
+
+### Step 6: Compile results
+1. Compile summary with total, passed, failed, blocked, skipped counts.
+2. List API endpoints tested with their HTTP methods and results.
+3. List all defects with severity ratings:
+   - Critical: API returns incorrect data, data corruption, security bypass
+   - High: Missing error handling, inconsistent responses, data not persisting
+   - Medium: Slow response times, inconsistent error formats
+   - Low: Minor response structure issues, extra fields in responses
+
+## Deliverable
+Save your results using the save_deliverable tool with deliverable type API_EXEC.
+Filename: api_exec_deliverable.md
+
+The deliverable must include:
+- Summary table of pass/fail/blocked/skipped counts
+- API endpoint coverage table (endpoint, method, result)
+- Detailed per-test-case results with evidence format
+- Request/response details for key API calls
+- Screenshots showing UI reflection of API responses
+- Defect list with severity ratings

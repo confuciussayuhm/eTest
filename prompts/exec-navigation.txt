@@ -1,0 +1,153 @@
+@include(shared/common-uat-rules.txt)
+@include(shared/evidence-format.txt)
+@include(shared/login-instructions.txt)
+
+# Navigation Test Execution Agent - Execute navigation test cases with browser automation
+
+## Target
+{TARGET_URL}
+
+## Context
+Read the following deliverable before executing:
+- navigation_plan_deliverable.md - contains the detailed test cases to execute
+
+## Configuration
+- **Skip rules**: {CONFIG_RULES_SKIP}
+- **Focus rules**: {CONFIG_RULES_FOCUS}
+- **Environment**: {ENVIRONMENT_CONFIG}
+
+## Objective
+Execute every navigation test case from the plan using Playwright browser automation. Navigate to each
+page, verify routing, test links and menus, confirm breadcrumbs, and validate back/forward behavior.
+Capture screenshot evidence for every test case and record pass/fail results with detailed notes.
+
+## Instructions
+
+### Step 1: Load the test plan
+1. Read navigation_plan_deliverable.md to get the complete list of test cases.
+2. Parse each test case to extract: ID, title, preconditions, steps, and expected result.
+3. Count the total number of test cases and log: "Starting navigation test execution: N test cases."
+
+### Step 2: Set up the browser session
+1. Use the Playwright MCP tools to launch a browser session.
+2. Navigate to {TARGET_URL} and verify the page loads successfully.
+3. Take a screenshot of the landing page as baseline evidence.
+4. If authentication is required, follow the login instructions to authenticate.
+5. Verify authentication succeeded before proceeding with test execution.
+
+### Step 3: Execute each test case
+For each test case in the plan, follow this procedure:
+
+1. **Log the test start**: Record the test case ID and title.
+2. **Set up preconditions**: Navigate to the required starting page, ensure the required state.
+3. **Execute each step**:
+   - Use `browser_navigate` to navigate to URLs.
+   - Use `browser_click` to click navigation links, menu items, breadcrumbs.
+   - Use `browser_snapshot` to capture the current page state after each action.
+   - Use `browser_take_screenshot` to capture visual evidence at key moments.
+4. **Verify expected results**:
+   - Check the current URL matches the expected URL after navigation.
+   - Verify page content contains expected elements (headings, sections, data).
+   - Verify breadcrumb trail is correct for the current page.
+   - Verify active navigation state highlights the correct menu item.
+5. **Capture evidence**:
+   - Take a screenshot BEFORE the action (starting state).
+   - Take a screenshot AFTER the action (result state).
+   - For failures, take an additional screenshot clearly showing the discrepancy.
+6. **Record the verdict**:
+   - PASS: Actual result matches expected result exactly.
+   - FAIL: Actual result differs from expected result. Document what was expected vs what happened.
+   - BLOCKED: Test cannot be executed due to a prerequisite failure. Document the blocker.
+   - SKIPPED: Test was intentionally skipped per configuration rules. Document the reason.
+
+### Step 4: Handle specific navigation test types
+
+**Link testing:**
+- Click each link and verify the destination URL and page content.
+- Verify external links open in a new tab (if applicable).
+- Check for broken links (404 responses).
+
+**Menu testing:**
+- Open each menu level and verify all items are present.
+- Click each menu item and verify correct navigation.
+- Test menu behavior on different viewport sizes if responsive.
+
+**Breadcrumb testing:**
+- On each page, verify the breadcrumb trail matches the navigation hierarchy.
+- Click each breadcrumb segment and verify it navigates to the correct parent page.
+
+**Back/forward testing:**
+- Navigate through a sequence of pages.
+- Use the browser back button and verify the previous page loads correctly.
+- Use the browser forward button and verify the next page loads correctly.
+- Verify page state is preserved on back navigation (scroll position, form data).
+
+**Deep linking:**
+- Navigate directly to a deep URL (not through the application's navigation).
+- Verify the page loads correctly with all required data.
+- Verify breadcrumbs and navigation state reflect the deep-linked page.
+
+**404/error routing:**
+- Navigate to non-existent URLs within the application.
+- Verify a proper 404 page is displayed.
+- Verify the 404 page offers navigation back to valid pages.
+
+### Step 5: Handle errors during execution
+- If a page fails to load, wait 5 seconds and retry once. If still failing, mark as BLOCKED.
+- If a click does not produce the expected navigation, take a screenshot and mark as FAIL.
+- If you encounter an unexpected alert or modal, dismiss it, take a screenshot, and note it.
+- If the session expires mid-test, re-authenticate and resume from the current test case.
+- Never skip a test case silently -- always record a verdict with an explanation.
+
+### Step 6: Compile results
+1. After executing all test cases, compile a summary:
+   - Total test cases: N
+   - Passed: X
+   - Failed: Y
+   - Blocked: Z
+   - Skipped: W
+   - Pass rate: X/N (percentage)
+2. List all failures with their test case ID, description, and screenshot references.
+3. List all defects found, categorized by severity:
+   - Critical: Navigation completely broken, pages inaccessible
+   - High: Links lead to wrong pages, menus missing items
+   - Medium: Breadcrumbs incorrect, inconsistent navigation states
+   - Low: Minor visual issues in navigation elements
+
+## Deliverable
+Save your results using the save_deliverable tool with deliverable type NAVIGATION_EXEC.
+Filename: navigation_exec_deliverable.md
+
+The deliverable must follow this structure:
+```markdown
+# Navigation Test Execution Report
+
+## Summary
+| Metric | Count |
+|--------|-------|
+| Total Tests | N |
+| Passed | X |
+| Failed | Y |
+| Blocked | Z |
+| Skipped | W |
+| Pass Rate | X% |
+
+## Test Results
+
+### NAV-TC-001: [Title]
+- **Status**: PASS/FAIL/BLOCKED/SKIPPED
+- **Steps Executed**: [what was done]
+- **Expected**: [expected result]
+- **Actual**: [actual result]
+- **Evidence**: [screenshot references]
+- **Notes**: [additional context]
+
+[repeat for each test case]
+
+## Defects Found
+| ID | Severity | Test Case | Description |
+|----|----------|-----------|-------------|
+
+## Screenshots
+[List of all screenshots taken with descriptions]
+```

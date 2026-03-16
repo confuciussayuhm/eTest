@@ -1,0 +1,113 @@
+@include(shared/common-uat-rules.txt)
+@include(shared/login-instructions.txt)
+
+# Multi-Persona Setup Agent - Configure and validate test personas for access control testing
+
+## Target
+{TARGET_URL}
+
+## Context
+Read the following deliverables for application context:
+- discovery_deliverable.md - to understand the application structure and authentication boundaries
+
+## Configuration
+- **Skip rules**: {CONFIG_RULES_SKIP}
+- **Focus rules**: {CONFIG_RULES_FOCUS}
+- **Environment**: {ENVIRONMENT_CONFIG}
+- **Personas**: {PERSONAS_CONFIG}
+
+## Objective
+Configure and validate all test personas defined in the personas configuration. Log in as each persona
+to verify credentials work, document what each persona can see and do, and build a capability map
+comparing access levels across all personas. This setup deliverable is used by subsequent multi-persona
+agents to record, replay, and analyze access control differences.
+
+## Instructions
+
+### Step 1: Parse the personas configuration
+1. Read the {PERSONAS_CONFIG} to extract all defined personas.
+2. For each persona, record:
+   - Persona name/identifier
+   - Role/permission level
+   - Login credentials (username, password, or other auth method)
+   - Expected permissions (pages, features, actions they should have access to)
+   - Expected restrictions (what they should NOT have access to)
+3. Order personas from highest privilege to lowest privilege.
+4. Identify the primary persona (highest privilege level -- typically admin or superuser).
+
+### Step 2: Set up the browser session
+1. Launch a browser session using the Playwright MCP tools.
+2. Navigate to {TARGET_URL} and verify the login page is accessible.
+3. Take a screenshot of the login page.
+
+### Step 3: Validate each persona
+For each persona, in order from highest to lowest privilege:
+
+1. **Log in as the persona**:
+   - Navigate to the login page.
+   - Enter the persona's credentials using `browser_type`.
+   - Submit the login form using `browser_click`.
+   - Wait for the authentication to complete.
+2. **Verify login success**:
+   - Check the URL changed to the expected post-login page.
+   - Verify the user identity is displayed (username, role indicator, avatar).
+   - Take a screenshot of the landing page for this persona.
+   - If login fails: record the failure, take a screenshot, and move to the next persona.
+3. **Map the persona's capabilities**:
+   - **Navigation inventory**: Identify all navigation items visible to this persona.
+     Record every link in the main menu, sidebar, header, and any secondary navigation.
+   - **Page access**: Navigate to each page visible in the navigation and confirm it loads.
+     Take a screenshot of key pages.
+   - **Feature inventory**: On each accessible page, note:
+     - Buttons and actions available (create, edit, delete, export, etc.)
+     - Data visible (record counts, columns in tables, dashboard widgets)
+     - Settings and configuration options available
+   - **Hidden elements**: Note any UI elements that are disabled, grayed out, or hidden
+     compared to the expected full set.
+4. **Document the capability map** for this persona with the full list of:
+   - Accessible pages (with URLs)
+   - Available actions per page
+   - Visible data scope
+   - Disabled or hidden elements
+5. **Log out** completely:
+   - Click the logout button.
+   - Verify the session is terminated (redirected to login page).
+   - Clear any session state if needed.
+6. **Proceed to the next persona**.
+
+### Step 4: Build the comparison matrix
+After validating all personas:
+1. Create a feature access matrix with rows = personas and columns = features/pages.
+2. Mark each cell as: FULL ACCESS / PARTIAL ACCESS / READ ONLY / NO ACCESS / NOT TESTED.
+3. Identify the critical permission boundaries:
+   - Features accessible to admin but not to regular users.
+   - Data visible to managers but not to team members.
+   - Actions available to editors but not to viewers.
+4. Highlight any unexpected access patterns:
+   - A lower-privilege persona with access to something a higher-privilege persona lacks.
+   - A persona with access that contradicts their expected restrictions.
+
+### Step 5: Identify testing priorities
+1. List the most critical permission boundaries to test during recording and replay.
+2. Prioritize areas with sensitive data (PII, financial data, credentials).
+3. Prioritize areas with destructive actions (delete, bulk operations, configuration changes).
+4. Note any areas where access control seems inconsistent or unclear.
+
+### Step 6: Handle errors
+- If a persona's credentials do not work, document the failure and skip that persona.
+- If a page is inaccessible to all personas, note it as a potential application issue.
+- If the application has MFA and you cannot complete it for a persona, mark as BLOCKED.
+- If the login flow differs per persona (SSO vs form), note the difference.
+
+## Deliverable
+Save your findings using the save_deliverable tool with deliverable type MULTI_PERSONA_SETUP.
+Filename: multi_persona_setup_deliverable.md
+
+The deliverable must include:
+- Persona inventory table: name, role, login status (success/failure), privilege level
+- Per-persona capability map: accessible pages, available actions, visible data scope
+- Feature access comparison matrix: persona x feature = access level
+- Critical permission boundaries identified for testing
+- Testing priority list (which boundaries to test first)
+- Screenshots: login page, each persona's landing page, key page differences
+- Any personas that could not be validated (with reasons)

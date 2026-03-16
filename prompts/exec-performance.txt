@@ -1,0 +1,175 @@
+@include(shared/common-uat-rules.txt)
+@include(shared/evidence-format.txt)
+@include(shared/login-instructions.txt)
+
+# Performance Test Execution Agent - Execute user-perceived performance test cases
+
+## Target
+{TARGET_URL}
+
+## Context
+Read the following deliverable before executing:
+- performance_plan_deliverable.md - contains the detailed test cases to execute
+
+## Configuration
+- **Skip rules**: {CONFIG_RULES_SKIP}
+- **Focus rules**: {CONFIG_RULES_FOCUS}
+- **Environment**: {ENVIRONMENT_CONFIG}
+
+## Objective
+Execute every performance test case from the plan using Playwright browser automation. Measure page load
+times, Core Web Vitals, interaction responsiveness, and perceived performance using the browser's
+Performance API. Compare measurements against the defined performance budgets. Capture evidence including
+timing data, screenshots of loading states, and resource loading waterfalls.
+
+## Instructions
+
+### Step 1: Load the test plan
+1. Read performance_plan_deliverable.md to get the complete list of test cases and performance budgets.
+2. Parse each test case: ID, page/flow, metric, threshold, steps, and expected result.
+3. Extract the performance budget table for reference during execution.
+4. Count total test cases and log: "Starting performance test execution: N test cases."
+
+### Step 2: Set up the browser session
+1. Launch a browser session using the Playwright MCP tools.
+2. Navigate to {TARGET_URL} to warm up the browser.
+3. Authenticate if required using the login instructions.
+
+### Step 3: Execute each test case
+For each test case in the plan:
+
+1. **Log the test start**: Record the test case ID, metric, and threshold.
+2. **Prepare the measurement**:
+   - For page load tests: clear the performance entries before navigation.
+   - For interaction tests: navigate to the target page first, then prepare to measure.
+3. **Execute the performance measurement**:
+   - Navigate to the page or perform the interaction being measured.
+   - Immediately capture performance data via JavaScript execution.
+4. **Collect timing data**:
+   - Use the Performance Navigation Timing API:
+     ```javascript
+     const t = performance.getEntriesByType('navigation')[0];
+     JSON.stringify({
+       dns: t.domainLookupEnd - t.domainLookupStart,
+       tcp: t.connectEnd - t.connectStart,
+       ttfb: t.responseStart - t.requestStart,
+       download: t.responseEnd - t.responseStart,
+       domContentLoaded: t.domContentLoadedEventEnd - t.startTime,
+       loadComplete: t.loadEventEnd - t.startTime,
+       domInteractive: t.domInteractive - t.startTime
+     })
+     ```
+   - Capture resource timing for total page weight:
+     ```javascript
+     const resources = performance.getEntriesByType('resource');
+     JSON.stringify({
+       totalRequests: resources.length,
+       totalSize: resources.reduce((sum, r) => sum + (r.transferSize || 0), 0),
+       byType: resources.reduce((acc, r) => {
+         const ext = r.name.split('.').pop().split('?')[0].toLowerCase();
+         acc[ext] = (acc[ext] || 0) + (r.transferSize || 0);
+         return acc;
+       }, {})
+     })
+     ```
+5. **Measure Core Web Vitals** where possible:
+   - LCP (Largest Contentful Paint):
+     ```javascript
+     new PerformanceObserver((list) => {
+       const entries = list.getEntries();
+       const last = entries[entries.length - 1];
+       console.log('LCP:', last.startTime, 'ms', 'element:', last.element?.tagName);
+     }).observe({ type: 'largest-contentful-paint', buffered: true });
+     ```
+   - CLS (Cumulative Layout Shift):
+     ```javascript
+     let clsValue = 0;
+     new PerformanceObserver((list) => {
+       for (const entry of list.getEntries()) {
+         if (!entry.hadRecentInput) clsValue += entry.value;
+       }
+       console.log('CLS:', clsValue);
+     }).observe({ type: 'layout-shift', buffered: true });
+     ```
+6. **Measure interaction responsiveness** for interaction tests:
+   - Record the timestamp before clicking/typing.
+   - Record the timestamp when the UI updates (new content visible).
+   - Calculate the interaction response time.
+7. **Capture visual evidence**:
+   - Take a screenshot during the loading state (if visible).
+   - Take a screenshot when the page is fully loaded.
+   - For slow pages, take multiple screenshots at 1-second intervals during load.
+8. **Compare against threshold**:
+   - If measured value meets the threshold: PASS.
+   - If measured value exceeds the threshold: FAIL.
+   - Record exact measured values alongside thresholds.
+9. **Record the verdict** with all timing data.
+
+### Step 4: Handle specific performance test types
+
+**Page load performance:**
+- Clear browser cache before cold-start measurements.
+- For warm cache tests, navigate away and back.
+- Measure at least 2 times for each page and report average and worst.
+- Take screenshots during loading states (skeleton screens, spinners).
+
+**Interaction responsiveness:**
+- Measure click-to-visual-response time.
+- Measure form input latency (keystroke to character visible).
+- Measure dropdown open time.
+- Measure modal open/close time.
+- Measure search results population time.
+
+**Data loading performance:**
+- Measure time from page load to data visible in tables/lists.
+- Measure pagination navigation time.
+- Measure filter application time.
+- Measure sort operation time.
+
+**Resource efficiency:**
+- Record total number of network requests per page.
+- Record total transferred bytes per page.
+- Identify the largest resources (images, JS bundles, fonts).
+- Check for unnecessary duplicate requests.
+- Verify caching headers on static resources.
+
+**Perceived performance:**
+- Verify loading skeletons appear within 200ms of navigation.
+- Verify progress indicators for operations longer than 1 second.
+- Check for layout shifts during content loading (CLS).
+- Verify above-the-fold content loads before below-the-fold.
+
+### Step 5: Handle errors during execution
+- If Performance API data is not available, use visual timing (screenshot timestamps) as fallback.
+- If a page takes more than 30 seconds to load, mark as FAIL with timeout note.
+- If JavaScript console execution is blocked, note the limitation and rely on visual observation.
+- If measurements are inconsistent, take 3 samples and report median, min, and max.
+- Network conditions may vary -- note any observed network issues that could affect measurements.
+
+### Step 6: Compile results
+1. Compile summary with total, passed, failed, blocked, skipped counts.
+2. Build a performance metrics table:
+   | Page/Flow | Metric | Threshold | Measured | Verdict |
+3. Summarize Core Web Vitals:
+   - LCP: across key pages
+   - CLS: across key pages
+   - Interaction responsiveness: across key interactions
+4. List all defects with severity ratings:
+   - Critical: Page load > 10 seconds, complete timeout, JavaScript errors blocking load
+   - High: LCP > 4.0s, CLS > 0.25, interactions > 1 second
+   - Medium: LCP 2.5-4.0s, CLS 0.1-0.25, interactions 200ms-1s
+   - Low: Minor optimization opportunities, non-critical resource loading
+
+## Deliverable
+Save your results using the save_deliverable tool with deliverable type PERFORMANCE_EXEC.
+Filename: performance_exec_deliverable.md
+
+The deliverable must include:
+- Summary table of pass/fail/blocked/skipped counts
+- Performance metrics table with measured values vs thresholds
+- Core Web Vitals summary for key pages
+- Detailed per-test-case results with evidence format
+- Resource loading analysis (request counts, page weights)
+- Screenshots of loading states and slow-loading pages
+- Performance improvement recommendations
+- Defect list with severity ratings

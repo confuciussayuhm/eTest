@@ -1,0 +1,163 @@
+# =============================================================================
+# Testicles UAT Framework - Example Configuration
+# =============================================================================
+# Copy this file and modify it for your specific testing needs.
+# All top-level sections are optional. Include only what you need.
+
+# -----------------------------------------------------------------------------
+# Authentication
+# -----------------------------------------------------------------------------
+# Configure how the UAT agent logs into your application.
+# Supports form-based login, SSO, API token, and HTTP basic auth.
+authentication:
+  login_type: form  # Options: 'form', 'sso', 'api', 'basic'
+  login_url: "https://example.com/login"
+  credentials:
+    username: "testuser@example.com"
+    password: "testpassword123"
+    totp_secret: "JBSWY3DPEHPK3PXP"  # Optional: Base32-encoded TOTP secret for 2FA
+
+  # Natural language instructions describing the login flow.
+  # Use $username, $password, and $totp as placeholders.
+  login_flow:
+    - "Type $username into the email field"
+    - "Type $password into the password field"
+    - "Click the 'Sign In' button"
+    - "Enter $totp in the verification code field"
+    - "Click 'Verify'"
+
+  # How to verify that login succeeded
+  success_condition:
+    type: url_contains  # Options: 'url', 'url_contains', 'cookie', 'element', 'redirect'
+    value: "/dashboard"
+
+# -----------------------------------------------------------------------------
+# Acceptance Criteria
+# -----------------------------------------------------------------------------
+# Define specific behaviors the UAT should verify. Each criterion maps to a
+# test category and priority level to guide test planning and execution.
+acceptance_criteria:
+  - id: "AC-001"
+    description: "User can successfully log in with valid credentials"
+    category: "auth"
+    priority: "critical"
+    expected_behavior: "After entering valid credentials, user is redirected to dashboard with session cookie set"
+
+  - id: "AC-002"
+    description: "Navigation menu displays all expected sections"
+    category: "navigation"
+    priority: "high"
+    expected_behavior: "Main navigation shows Home, Products, Orders, Settings, and Help links"
+
+  - id: "AC-003"
+    description: "Product search returns relevant results"
+    category: "forms"
+    priority: "medium"
+    expected_behavior: "Searching for a product name returns matching items within 2 seconds"
+
+  - id: "AC-004"
+    description: "API returns correct pagination"
+    category: "api"
+    priority: "medium"
+    expected_behavior: "GET /api/v1/products?page=1&limit=10 returns exactly 10 items with valid next_page token"
+
+# -----------------------------------------------------------------------------
+# Personas
+# -----------------------------------------------------------------------------
+# Define user personas for multi-persona authorization testing.
+# The agent will test access control by switching between these roles.
+personas:
+  personas:
+    - role: "admin"
+      username: "admin@example.com"
+      password: "adminpass123"
+    - role: "editor"
+      username: "editor@example.com"
+      password: "editorpass123"
+    - role: "viewer"
+      username: "viewer@example.com"
+      password: "viewerpass123"
+
+  # Optional: define privilege levels for role hierarchy testing
+  role_hierarchy:
+    - role: "admin"
+      level: 100
+    - role: "editor"
+      level: 50
+    - role: "viewer"
+      level: 10
+
+# -----------------------------------------------------------------------------
+# Environment
+# -----------------------------------------------------------------------------
+# Target environment settings. base_url is required if this section is present.
+environment:
+  base_url: "https://example.com"
+  api_base_url: "https://api.example.com"
+  timeout_ms: 30000
+  viewport:
+    width: 1920
+    height: 1080
+
+# -----------------------------------------------------------------------------
+# Rules
+# -----------------------------------------------------------------------------
+# Scope the UAT by skipping or focusing on specific paths, subdomains,
+# HTTP methods, headers, or parameters.
+rules:
+  # Areas to exclude from testing
+  skip:
+    - description: "Do not test the marketing site subdomain"
+      type: subdomain
+      url_path: "www"
+
+    - description: "Skip logout functionality to preserve sessions"
+      type: path
+      url_path: "/logout"
+
+    - description: "Skip DELETE operations on user API"
+      type: path
+      url_path: "/api/v1/users/*"
+
+  # Areas to prioritize during testing
+  focus:
+    - description: "Prioritize the new checkout flow"
+      type: path
+      url_path: "/checkout/*"
+
+    - description: "Focus on user profile updates"
+      type: path
+      url_path: "/api/v2/user-profile"
+
+# -----------------------------------------------------------------------------
+# Regression
+# -----------------------------------------------------------------------------
+# Re-run specific test cases from previous UAT runs to verify fixes.
+# Use with: ./testicles start URL=<url> CONFIG=<this-file> REGRESSION=true
+regression:
+  test_cases:
+    - id: "REG-001"
+      title: "Login form accepts valid credentials"
+      severity: "critical"
+      test_category: "auth"
+      description: "Verify that the login form accepts valid username/password and creates a session"
+
+    - id: "REG-002"
+      title: "Product listing pagination works correctly"
+      severity: "high"
+      test_category: "navigation"
+      description: "Verify that clicking next/previous on product listing navigates correctly and loads new items"
+
+    - id: "REG-003"
+      title: "Order form validates required fields"
+      severity: "medium"
+      test_category: "forms"
+      description: "Verify that submitting the order form without required fields shows appropriate validation errors"
+
+# -----------------------------------------------------------------------------
+# Pipeline (optional)
+# -----------------------------------------------------------------------------
+# Tune retry behavior and concurrency for the test execution pipeline.
+# pipeline:
+#   retry_preset: subscription          # 'default' or 'subscription' (extends timeouts for rate limit recovery)
+#   max_concurrent_pipelines: 3         # 1-20, default: 5 (reduce to lower API usage spikes)

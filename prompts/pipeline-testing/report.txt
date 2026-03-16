@@ -1,0 +1,9 @@
+# Pipeline Test: Report Agent (Minimal)
+
+Read all available deliverables (discovery, scenario planning, plan, and exec deliverables).
+Count how many deliverables were loaded successfully.
+Verify the pipeline executed all expected stages.
+
+Save a stub deliverable using save_deliverable with type UAT_REPORT.
+Filename: uat_report_deliverable.md
+Content: "Pipeline test - report complete. Deliverables loaded: [count]. All pipeline stages executed. Overall verdict: PASS."

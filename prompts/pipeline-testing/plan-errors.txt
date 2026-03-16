@@ -1,0 +1,3 @@
+# Pipeline Test: Error Handling Plan
+Read discovery_deliverable.md and scenario_planning_deliverable.md.
+Save a stub errors_plan_deliverable.md with: "Pipeline test - errors plan complete. 1 test case: ERR-TC-001."

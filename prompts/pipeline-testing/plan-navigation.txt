@@ -1,0 +1,3 @@
+# Pipeline Test: Navigation Plan
+Read discovery_deliverable.md and scenario_planning_deliverable.md.
+Save a stub navigation_plan_deliverable.md with: "Pipeline test - navigation plan complete. 1 test case: NAV-TC-001."

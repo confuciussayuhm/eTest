@@ -1,0 +1,4 @@
+# Pipeline Test: API Exec
+Read api_plan_deliverable.md.
+Navigate to {{WEB_URL}} using {{MCP_SERVER}}, verify page loads.
+Save a stub api_exec_deliverable.md with: "Pipeline test - api exec complete. 1 test: PASS."

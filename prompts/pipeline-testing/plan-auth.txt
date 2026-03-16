@@ -1,0 +1,3 @@
+# Pipeline Test: Auth Plan
+Read discovery_deliverable.md and scenario_planning_deliverable.md.
+Save a stub auth_plan_deliverable.md with: "Pipeline test - auth plan complete. 1 test case: AUTH-TC-001."

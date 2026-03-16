@@ -1,0 +1,355 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/uat-config-schema.json",
+  "title": "UAT Configuration Schema",
+  "description": "Schema for YAML configuration files used in the UAT automation framework",
+  "type": "object",
+  "properties": {
+    "authentication": {
+      "type": "object",
+      "description": "Authentication configuration for the target application",
+      "properties": {
+        "login_type": {
+          "type": "string",
+          "enum": ["form", "sso", "api", "basic"],
+          "description": "Type of authentication mechanism"
+        },
+        "login_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL for the login page or endpoint"
+        },
+        "credentials": {
+          "type": "object",
+          "description": "Login credentials",
+          "properties": {
+            "username": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255,
+              "description": "Username or email for authentication"
+            },
+            "password": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255,
+              "description": "Password for authentication"
+            },
+            "totp_secret": {
+              "type": "string",
+              "pattern": "^[A-Za-z2-7]+=*$",
+              "description": "TOTP secret for two-factor authentication (Base32 encoded, case insensitive)"
+            }
+          },
+          "required": ["username", "password"],
+          "additionalProperties": false
+        },
+        "login_flow": {
+          "type": "array",
+          "description": "Step-by-step instructions for the login process",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "minItems": 1,
+          "maxItems": 20
+        },
+        "success_condition": {
+          "type": "object",
+          "description": "Condition that indicates successful authentication",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["url", "url_contains", "cookie", "element", "redirect"],
+              "description": "Type of success condition to check"
+            },
+            "value": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500,
+              "description": "Value to match against the success condition"
+            }
+          },
+          "required": ["type", "value"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["login_type", "login_url", "credentials", "success_condition"],
+      "additionalProperties": false
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "description": "Acceptance criteria that define expected behaviors to verify",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Unique identifier for this acceptance criterion (e.g., AC-001)"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "description": "Human-readable description of the acceptance criterion"
+          },
+          "category": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Category grouping (e.g., navigation, forms, auth, api)"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low"],
+            "description": "Priority level for this criterion"
+          },
+          "expected_behavior": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "description": "Detailed description of the expected behavior"
+          }
+        },
+        "required": ["id", "description", "category", "priority", "expected_behavior"],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 200
+    },
+    "personas": {
+      "type": "object",
+      "description": "User personas for multi-persona testing",
+      "properties": {
+        "personas": {
+          "type": "array",
+          "description": "List of user personas with credentials",
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100,
+                "description": "Role designation for this persona (e.g., admin, editor, viewer)"
+              },
+              "username": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255,
+                "description": "Username or email for this persona"
+              },
+              "password": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255,
+                "description": "Password for this persona"
+              },
+              "totp_secret": {
+                "type": "string",
+                "pattern": "^[A-Za-z2-7]+=*$",
+                "description": "TOTP secret for two-factor authentication (Base32 encoded)"
+              }
+            },
+            "required": ["role", "username", "password"],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 10
+        },
+        "role_hierarchy": {
+          "type": "array",
+          "description": "Role hierarchy defining privilege levels",
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100,
+                "description": "Role name matching a persona role"
+              },
+              "level": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000,
+                "description": "Privilege level (higher = more access)"
+              }
+            },
+            "required": ["role", "level"],
+            "additionalProperties": false
+          },
+          "maxItems": 20
+        }
+      },
+      "required": ["personas"],
+      "additionalProperties": false
+    },
+    "environment": {
+      "type": "object",
+      "description": "Environment configuration for the target application",
+      "properties": {
+        "base_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Base URL of the target application"
+        },
+        "api_base_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Base URL for API endpoints (if different from base_url)"
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 300000,
+          "description": "Default timeout in milliseconds for page loads and API calls"
+        },
+        "viewport": {
+          "type": "object",
+          "description": "Browser viewport dimensions",
+          "properties": {
+            "width": {
+              "type": "integer",
+              "minimum": 320,
+              "maximum": 3840,
+              "description": "Viewport width in pixels"
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 240,
+              "maximum": 2160,
+              "description": "Viewport height in pixels"
+            }
+          },
+          "required": ["width", "height"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["base_url"],
+      "additionalProperties": false
+    },
+    "rules": {
+      "type": "object",
+      "description": "Testing rules that define what to focus on or skip during UAT",
+      "properties": {
+        "skip": {
+          "type": "array",
+          "description": "Rules defining areas to skip during testing",
+          "items": {
+            "$ref": "#/$defs/rule"
+          },
+          "maxItems": 50
+        },
+        "focus": {
+          "type": "array",
+          "description": "Rules defining areas to focus on during testing",
+          "items": {
+            "$ref": "#/$defs/rule"
+          },
+          "maxItems": 50
+        }
+      },
+      "additionalProperties": false
+    },
+    "regression": {
+      "type": "object",
+      "description": "Regression test configuration for re-verifying previously identified issues",
+      "properties": {
+        "test_cases": {
+          "type": "array",
+          "description": "List of regression test cases to execute",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100,
+                "description": "Unique identifier for this test case (e.g., REG-001)"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "description": "Title of the regression test case"
+              },
+              "severity": {
+                "type": "string",
+                "enum": ["critical", "high", "medium", "low"],
+                "description": "Severity of the original issue"
+              },
+              "test_category": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100,
+                "description": "Test category that maps to a test agent (e.g., navigation, forms, auth, api)"
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000,
+                "description": "Detailed description of what to verify"
+              }
+            },
+            "required": ["id", "title", "severity", "test_category", "description"],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 100
+        }
+      },
+      "required": ["test_cases"],
+      "additionalProperties": false
+    },
+    "pipeline": {
+      "type": "object",
+      "description": "Pipeline execution settings for retry behavior and concurrency",
+      "properties": {
+        "retry_preset": {
+          "type": "string",
+          "enum": ["default", "subscription"],
+          "description": "Retry preset. 'subscription' extends timeouts for Anthropic subscription rate limit windows (5h+)."
+        },
+        "max_concurrent_pipelines": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20,
+          "description": "Max concurrent test pipelines (1-20, default: 5)"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "description": "A single testing rule",
+      "properties": {
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Human-readable description of the rule"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["path", "subdomain", "domain", "method", "header", "parameter"],
+          "description": "Type of rule (what aspect of requests to match against)"
+        },
+        "url_path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "description": "URL path pattern or value to match"
+        }
+      },
+      "required": ["description", "type", "url_path"],
+      "additionalProperties": false
+    }
+  }
+}

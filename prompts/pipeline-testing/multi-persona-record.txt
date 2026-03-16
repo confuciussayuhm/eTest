@@ -1,0 +1,4 @@
+# Pipeline Test: Multi-Persona Record
+Read multi_persona_setup_deliverable.md.
+Navigate to {{WEB_URL}} using {{MCP_SERVER}} as primary persona.
+Save a stub multi_persona_record_deliverable.md with: "Pipeline test - persona record complete. 1 journey recorded."

@@ -1,0 +1,4 @@
+# Pipeline Test: Forms Exec
+Read forms_plan_deliverable.md.
+Navigate to {{WEB_URL}} using {{MCP_SERVER}}, verify page loads.
+Save a stub forms_exec_deliverable.md with: "Pipeline test - forms exec complete. 1 test: PASS."

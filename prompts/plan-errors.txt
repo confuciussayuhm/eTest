@@ -1,0 +1,151 @@
+@include(shared/common-uat-rules.txt)
+@include(shared/login-instructions.txt)
+
+# Error Handling Test Plan Agent - Design error condition and recovery test cases
+
+## Target
+{TARGET_URL}
+
+## Context
+Read the following deliverables before planning:
+- discovery_deliverable.md - to understand application structure, forms, and interactive elements
+- scenario_planning_deliverable.md - to extract error-handling-related scenarios
+
+## Configuration
+- **Skip rules**: {CONFIG_RULES_SKIP}
+- **Focus rules**: {CONFIG_RULES_FOCUS}
+- **Environment**: {ENVIRONMENT_CONFIG}
+- **Acceptance criteria**: {ACCEPTANCE_CRITERIA}
+
+## Objective
+Design a comprehensive error handling test plan that validates how the application responds to invalid input,
+system failures, edge cases, and unexpected conditions. Verify that error messages are user-friendly,
+that data is preserved during errors, and that recovery paths are clear and functional.
+
+## Instructions
+
+### Step 1: Load prerequisite deliverables
+1. Read discovery_deliverable.md to identify all forms, interactive elements, and data operations.
+2. Read scenario_planning_deliverable.md to find all error-handling scenarios.
+3. Note skip/focus rules that constrain which areas to test.
+
+### Step 2: Inventory error-prone areas
+1. List all forms and their input fields (these are primary sources of validation errors).
+2. List all data operations (create, update, delete) that could fail.
+3. List all pages that load data (could encounter API errors or empty states).
+4. Identify authentication-dependent areas (could encounter session errors).
+5. Identify file upload features (could encounter file type/size errors).
+6. Identify payment or transactional flows (could encounter processing errors).
+7. Note all navigation entry points where invalid URLs could be entered.
+
+### Step 3: Design form validation error test cases
+For each form discovered:
+1. Test submitting with all required fields empty -- verify each required field shows an error.
+2. Test each field with invalid format data:
+   - Email fields: "notanemail", "missing@domain", "@nodomain.com"
+   - Phone fields: "abc", "123", too many/few digits
+   - URL fields: "notaurl", "ftp://wrong-protocol"
+   - Number fields: "abc", negative numbers, decimals where integers expected, extreme values
+   - Date fields: invalid dates, past dates where future required, "02/30/2025"
+   - Password fields: too short, missing complexity requirements
+3. Test boundary values for fields with length limits (min length, max length, max+1).
+4. Test special characters in text fields: `<script>`, `'; DROP TABLE`, unicode, emoji.
+5. Test extremely long input (10,000+ characters) in text fields.
+6. Test pasting formatted content into plain text fields.
+7. Verify error messages appear next to the correct field.
+8. Verify error messages are specific and actionable (not generic "invalid input").
+9. Verify valid fields retain their values when the form shows errors.
+10. Test that errors clear when the user corrects the input.
+
+### Step 4: Design HTTP error page test cases
+1. Navigate to a non-existent URL path -- verify 404 page appears with helpful navigation.
+2. Access a restricted resource without authentication -- verify 401/403 handling.
+3. If possible, trigger a 500 error -- verify the error page is user-friendly.
+4. Verify error pages include:
+   - Clear explanation of what happened
+   - Navigation back to a working page (home link, back button)
+   - No technical jargon or stack traces visible to users
+   - Consistent branding with the rest of the application
+
+### Step 5: Design network and API error test cases
+1. Test behavior when the page loads but an API call fails (partial page load).
+2. Test behavior when all API calls fail (complete data loading failure).
+3. Verify appropriate error states are shown (not blank pages or broken layouts).
+4. Test retry mechanisms -- does the application offer a "try again" option?
+5. Verify console does not show unhandled promise rejections or uncaught errors.
+6. Test behavior when the server returns unexpected data formats.
+7. Test behavior during very slow responses (loading states, timeouts).
+
+### Step 6: Design session and authentication error test cases
+1. Test performing an action after the session has expired.
+2. Verify the user is redirected to login with a clear "session expired" message.
+3. Verify the user can return to their previous location after re-authenticating.
+4. Test submitting a form after session expiry -- is the form data preserved?
+5. Test concurrent session behavior if applicable (logged in on two tabs/browsers).
+6. Test what happens when auth tokens are invalid or tampered with.
+
+### Step 7: Design data conflict and integrity error test cases
+1. Test saving stale data (another user modified the record) -- is a conflict detected?
+2. Test double-submitting a form (rapid double-click on submit).
+3. Test deleting a record that another user is currently editing.
+4. Test creating a duplicate record when uniqueness is required.
+5. Test referential integrity -- deleting a record referenced by other records.
+6. Test concurrent edits to the same resource from different sessions.
+
+### Step 8: Design file upload error test cases
+1. Test uploading an invalid file type (e.g., .exe when only .pdf is allowed).
+2. Test uploading a file that exceeds the size limit.
+3. Test uploading a zero-byte/empty file.
+4. Test uploading a file with a very long filename.
+5. Test uploading a file with special characters in the filename.
+6. Test the behavior when an upload is interrupted (navigate away mid-upload).
+7. Verify clear error messages for each rejection reason.
+
+### Step 9: Design error recovery test cases
+1. After each error condition, verify the user can recover without losing work.
+2. Test browser back button after errors -- does it return to a working state?
+3. Test refreshing the page after an error -- does the page recover?
+4. Verify auto-save or draft preservation for long forms after errors.
+5. Test that error states do not permanently corrupt the UI (no lingering error banners).
+
+### Step 10: Design error message quality test cases
+1. Verify all error messages are written in plain language (no error codes alone).
+2. Verify error messages explain what went wrong and what to do about it.
+3. Verify error messages are consistently styled throughout the application.
+4. Verify error messages are accessible (announced by screen readers, sufficient color contrast).
+5. Verify no raw technical errors (stack traces, SQL errors, JSON) are shown to users.
+
+### Step 11: Format each test case
+Use this format for every test case:
+- **ID**: ERR-TC-XXX
+- **Title**: Brief description
+- **Error Type**: Validation / HTTP / Network / Session / Data / Upload / Recovery
+- **Page/Component**: Where the error is triggered
+- **Preconditions**: Required state to trigger the error
+- **Steps**: Numbered step-by-step instructions to trigger and observe the error
+- **Expected Result**: How the application should handle the error
+- **Recovery Path**: How the user should be able to recover
+- **Priority**: Critical / High / Medium / Low
+
+### Step 12: Organize and prioritize
+1. Group test cases by error type category.
+2. Assign priorities: Critical for data-loss scenarios and session errors, High for form validation
+   and API errors, Medium for error message quality, Low for edge case file uploads.
+3. Estimate execution time for the full error handling test suite.
+
+## Error Handling
+- If a deliverable cannot be loaded, note it and proceed with available information.
+- If certain error conditions cannot be triggered through the UI alone, note them as requiring
+  backend/network manipulation and mark as BLOCKED in the plan.
+
+## Deliverable
+Save the complete test plan using the save_deliverable tool with deliverable type ERRORS_PLAN.
+Filename: errors_plan_deliverable.md
+
+The deliverable must include:
+- Error-prone area inventory
+- Complete test case list organized by error type
+- Priority distribution
+- Recovery path documentation for each error category
+- Estimated execution time
+- Notes on any error conditions that cannot be tested through UI alone

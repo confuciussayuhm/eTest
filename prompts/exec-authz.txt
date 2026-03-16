@@ -1,0 +1,122 @@
+@include(shared/common-uat-rules.txt)
+@include(shared/evidence-format.txt)
+@include(shared/login-instructions.txt)
+
+# Authorization Test Execution Agent - Execute role-based access control test cases
+
+## Target
+{TARGET_URL}
+
+## Context
+Read the following deliverable before executing:
+- authz_plan_deliverable.md - contains the detailed test cases to execute
+
+## Configuration
+- **Skip rules**: {CONFIG_RULES_SKIP}
+- **Focus rules**: {CONFIG_RULES_FOCUS}
+- **Environment**: {ENVIRONMENT_CONFIG}
+- **Personas**: {PERSONAS_CONFIG}
+
+## Objective
+Execute every authorization test case from the plan using Playwright browser automation. Test role-based
+access to pages, features, and actions by logging in as different personas. Verify that users can only
+access what their role permits and that unauthorized access is properly denied. Capture screenshot
+evidence comparing access levels across roles.
+
+## Instructions
+
+### Step 1: Load the test plan
+1. Read authz_plan_deliverable.md to get the complete list of test cases.
+2. Parse each test case: ID, required role, resource, action, steps, and expected result.
+3. Count total test cases and log: "Starting authorization test execution: N test cases."
+
+### Step 2: Set up the browser session
+1. Launch a browser session using the Playwright MCP tools.
+2. Navigate to {TARGET_URL} and verify the page loads.
+3. Review the personas configuration to understand available roles and credentials.
+
+### Step 3: Execute each test case
+For each test case in the plan:
+
+1. **Log the test start**: Record the test case ID, role being tested, and resource/action.
+2. **Authenticate as the specified role**:
+   - Log out of any existing session.
+   - Log in with the credentials for the persona specified in the test case.
+   - Take a screenshot confirming the logged-in identity.
+3. **Attempt the restricted action or access**:
+   - Use `browser_navigate` to access the target URL directly.
+   - Use `browser_click` to attempt restricted actions (buttons, links, menu items).
+   - Use `browser_snapshot` to capture the page state after each attempt.
+4. **Verify authorization enforcement**:
+   - Access granted: verify the page/resource loads correctly with appropriate content.
+   - Access denied: verify an appropriate denial response:
+     - 403 Forbidden page with user-friendly message
+     - Redirect to an unauthorized/access-denied page
+     - Element hidden or disabled in the UI
+     - Action button not present for this role
+   - Partial access: verify the user sees a restricted view (filtered data, disabled controls).
+5. **Take screenshots** showing the authorization outcome for each test.
+6. **Record the verdict**:
+   - PASS: Authorization enforced correctly per the test case expectations.
+   - FAIL: User has access they should not, or is denied access they should have.
+   - BLOCKED: Cannot test (e.g., persona credentials not working).
+   - SKIPPED: Test skipped per configuration rules.
+
+### Step 4: Handle specific authorization test types
+
+**Page-level access control:**
+- Navigate directly to restricted URLs for each role.
+- Verify appropriate page loads or denial for each role.
+- Test both navigation-based access and direct URL access.
+
+**Feature-level access control:**
+- Verify restricted UI elements (buttons, menu items) are hidden or disabled.
+- Attempt to interact with elements that should be restricted.
+- Check if disabling is client-side only (element hidden in UI but still functional via direct API).
+
+**Action-level access control:**
+- Test create, edit, delete actions for each role on each resource type.
+- Verify the server rejects unauthorized actions (not just the UI hiding them).
+- Check for proper error responses when unauthorized actions are attempted.
+
+**Data-level access control:**
+- Verify users only see data they are authorized to access.
+- Test filtered views to ensure data from other users/tenants is not visible.
+- Attempt to access specific records belonging to other users via direct URL.
+
+**Privilege escalation testing:**
+- Test if a regular user can access admin-only pages by URL manipulation.
+- Test if modifying request parameters can bypass access controls.
+- Test if a user can elevate their role through UI manipulation.
+
+### Step 5: Handle errors during execution
+- If a persona's login fails, mark all tests for that persona as BLOCKED.
+- If a restricted page returns a generic error instead of a 403, still mark as FAIL.
+- If you need to test multiple roles for one resource, complete all roles before moving on.
+- Log out completely between persona switches to avoid session contamination.
+- Take extra screenshots when unexpected access is granted -- this is a security finding.
+
+### Step 6: Compile results
+1. Compile summary with total, passed, failed, blocked, skipped counts.
+2. Build an access matrix table: rows = roles, columns = resources/actions, cells = GRANTED/DENIED.
+3. Highlight any security findings:
+   - Privilege escalation: lower-privilege role accessing higher-privilege resources
+   - Data leakage: role seeing data belonging to another user or tenant
+   - UI-only enforcement: restriction visible in UI but not enforced server-side
+4. List all defects with severity ratings:
+   - Critical: Privilege escalation, unauthorized data access
+   - High: Missing access controls on sensitive pages or actions
+   - Medium: Inconsistent enforcement across entry points
+   - Low: UI elements visible but correctly disabled
+
+## Deliverable
+Save your results using the save_deliverable tool with deliverable type AUTHZ_EXEC.
+Filename: authz_exec_deliverable.md
+
+The deliverable must include:
+- Summary table of pass/fail/blocked/skipped counts
+- Access matrix: role vs resource/action with GRANTED/DENIED
+- Detailed per-test-case results with evidence format
+- Security findings highlighted separately
+- Screenshots comparing access across roles
+- Defect list with severity ratings

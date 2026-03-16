@@ -1,0 +1,4 @@
+# Pipeline Test: Data Exec
+Read data_plan_deliverable.md.
+Navigate to {{WEB_URL}} using {{MCP_SERVER}}, verify page loads.
+Save a stub data_exec_deliverable.md with: "Pipeline test - data exec complete. 1 test: PASS."

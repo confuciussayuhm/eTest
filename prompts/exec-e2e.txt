@@ -1,0 +1,158 @@
+@include(shared/common-uat-rules.txt)
+@include(shared/evidence-format.txt)
+@include(shared/login-instructions.txt)
+
+# End-to-End Test Execution Agent - Execute complete user journey test cases
+
+## Target
+{TARGET_URL}
+
+## Context
+Read the following deliverable before executing:
+- e2e_plan_deliverable.md - contains the detailed test cases to execute
+
+## Configuration
+- **Skip rules**: {CONFIG_RULES_SKIP}
+- **Focus rules**: {CONFIG_RULES_FOCUS}
+- **Environment**: {ENVIRONMENT_CONFIG}
+
+## Objective
+Execute every end-to-end test case from the plan using Playwright browser automation. Perform complete
+user journeys that span multiple pages, features, and system interactions. Verify that all features
+work together correctly as an integrated system. Capture screenshot evidence at every checkpoint in
+the journey. Record detailed step-by-step results including timing for each journey.
+
+## Instructions
+
+### Step 1: Load the test plan
+1. Read e2e_plan_deliverable.md to get the complete list of test cases.
+2. Parse each test case: ID, user role, preconditions, steps, checkpoints, and expected final state.
+3. Note any journey dependencies (which journeys must complete before others).
+4. Count total test cases and log: "Starting E2E test execution: N journeys."
+
+### Step 2: Set up the browser session
+1. Launch a browser session using the Playwright MCP tools.
+2. Navigate to {TARGET_URL} and verify the application is accessible.
+3. Take a screenshot of the starting state.
+
+### Step 3: Execute each journey
+For each test case in the plan:
+
+1. **Log the journey start**: Record the test case ID, journey title, and user role.
+2. **Record start time**: Note the timestamp for journey duration tracking.
+3. **Set up preconditions**:
+   - Authenticate as the specified user role.
+   - Navigate to the specified starting point.
+   - Verify any required test data exists.
+   - Take a screenshot of the starting state.
+4. **Execute each step sequentially**:
+   - For each step in the journey:
+     a. Read the step instruction carefully.
+     b. Use the appropriate Playwright MCP tool:
+        - `browser_navigate` for URL navigation.
+        - `browser_click` for clicking buttons, links, menu items.
+        - `browser_type` for entering text in form fields.
+        - `browser_select_option` for choosing dropdown values.
+        - `browser_press_key` for keyboard actions.
+     c. Wait for the action to complete (page load, data update, animation).
+     d. Use `browser_snapshot` to verify the page state.
+5. **Verify at each checkpoint**:
+   - At every checkpoint defined in the test case:
+     a. Verify the current URL matches expectations.
+     b. Verify the page content matches expectations.
+     c. Verify any data changes are reflected in the UI.
+     d. Take a screenshot labeled with the checkpoint ID.
+     e. Record: CHECKPOINT PASS or CHECKPOINT FAIL with details.
+   - If a checkpoint fails:
+     a. Document exactly what was expected vs what was observed.
+     b. Take a detailed screenshot of the discrepancy.
+     c. Decide whether to continue the journey or abort:
+        - If the failure is blocking (cannot proceed), mark remaining steps as BLOCKED.
+        - If the failure is non-blocking (can continue), log the failure and proceed.
+6. **Verify the final state**:
+   - After all steps complete, verify the expected final system state.
+   - Check that all data created/modified during the journey is correct.
+   - Check for any side effects in related features.
+   - Take a final screenshot.
+7. **Record journey timing**: Note the end timestamp and calculate total duration.
+8. **Record the journey verdict**:
+   - PASS: All checkpoints passed and final state is correct.
+   - FAIL: One or more checkpoints failed. List all failures.
+   - PARTIAL: Most checkpoints passed but some non-critical ones failed.
+   - BLOCKED: Journey could not be completed due to a blocking issue.
+
+### Step 4: Handle specific journey types
+
+**CRUD lifecycle journeys:**
+1. Create a new record with specific test data.
+2. Navigate to the list view and verify the record appears.
+3. Open the detail view and verify all fields.
+4. Edit the record and change specific fields.
+5. Verify changes are persisted.
+6. Delete the record and verify it is removed.
+7. Verify the record is not accessible via direct URL.
+Each step is a checkpoint.
+
+**Multi-step workflow journeys:**
+1. Start the workflow at step 1.
+2. Complete each step, verifying progression.
+3. At each step boundary, verify:
+   - Previous step data is preserved.
+   - Progress indicator shows correct step.
+   - Navigation back preserves data.
+4. Complete the workflow and verify the final outcome.
+5. Verify any notifications or confirmations triggered.
+
+**Cross-feature journeys:**
+1. Perform an action in Feature A.
+2. Navigate to Feature B and verify the effect is visible.
+3. Modify something in Feature B.
+4. Return to Feature A and verify consistency.
+5. Document every cross-feature data dependency observed.
+
+**Multi-role journeys:**
+1. Log in as Role A and perform the first part of the workflow.
+2. Log out and log in as Role B.
+3. Verify Role B can see the effects of Role A's actions.
+4. Complete the workflow as Role B.
+5. Log out and log in as Role A to verify the final state.
+Each role switch is a major checkpoint.
+
+### Step 5: Handle errors during execution
+- If a step fails, take a detailed screenshot and document the failure.
+- If the failure prevents continuing, mark remaining steps as BLOCKED.
+- If the application crashes during a journey, note the crash point and attempt to restart.
+- If test data setup fails, mark the entire journey as BLOCKED.
+- If a journey depends on another journey's data, ensure the prerequisite ran successfully first.
+- Never silently skip steps -- always document what happened at every step.
+
+### Step 6: Clean up after journeys
+1. After all journeys complete, note any test data that was created.
+2. Attempt to clean up test data if the plan includes cleanup steps.
+3. Document any test data that could not be cleaned up.
+
+### Step 7: Compile results
+1. Compile summary with total journeys, passed, failed, partial, blocked counts.
+2. Create a journey results table:
+   | ID | Title | Role | Steps | Checkpoints Passed | Duration | Verdict |
+3. List all checkpoint failures across all journeys.
+4. List all defects found with severity ratings:
+   - Critical: Core business flow completely broken, data corruption
+   - High: Major workflow step fails, cross-feature data inconsistency
+   - Medium: Non-critical checkpoint failure, minor data display issues
+   - Low: Cosmetic issues observed during journeys
+5. Note any data cleanup that is needed after testing.
+
+## Deliverable
+Save your results using the save_deliverable tool with deliverable type E2E_EXEC.
+Filename: e2e_exec_deliverable.md
+
+The deliverable must include:
+- Summary table of journey pass/fail/blocked counts
+- Detailed per-journey results with step-by-step evidence
+- Checkpoint verification results for every journey
+- Screenshots at every checkpoint
+- Journey timing measurements
+- Cross-feature interaction observations
+- Defect list with severity ratings
+- Test data cleanup notes

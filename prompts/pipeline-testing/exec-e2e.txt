@@ -1,0 +1,4 @@
+# Pipeline Test: E2E Exec
+Read e2e_plan_deliverable.md.
+Navigate to {{WEB_URL}} using {{MCP_SERVER}}, verify page loads.
+Save a stub e2e_exec_deliverable.md with: "Pipeline test - e2e exec complete. 1 test: PASS."

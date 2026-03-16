@@ -1,0 +1,3 @@
+# Pipeline Test: E2E Plan
+Read discovery_deliverable.md and scenario_planning_deliverable.md.
+Save a stub e2e_plan_deliverable.md with: "Pipeline test - e2e plan complete. 1 test case: E2E-TC-001."

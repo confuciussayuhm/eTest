@@ -1,0 +1,3 @@
+# Pipeline Test: Data Plan
+Read discovery_deliverable.md and scenario_planning_deliverable.md.
+Save a stub data_plan_deliverable.md with: "Pipeline test - data plan complete. 1 test case: DATA-TC-001."

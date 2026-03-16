@@ -1,0 +1,10 @@
+## Evidence Format
+
+For each test case, document:
+- **Test ID**: The acceptance criterion or test case ID
+- **Status**: PASS / FAIL / BLOCKED / SKIPPED
+- **Steps**: What was done
+- **Expected**: What should have happened
+- **Actual**: What actually happened
+- **Screenshot**: Path to screenshot evidence
+- **Notes**: Any additional context

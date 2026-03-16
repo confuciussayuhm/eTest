@@ -1,0 +1,7 @@
+## Common UAT Testing Rules
+
+1. Always take screenshots of important test steps as evidence
+2. Log all test actions with timestamps
+3. Report both passing and failing test cases
+4. Include reproduction steps for any failures found
+5. Use the save_deliverable tool to save all test results

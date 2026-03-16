@@ -1,0 +1,3 @@
+# Pipeline Test: Multi-Persona Setup
+Parse {{PERSONAS_CONFIG}} and verify at least one persona is defined.
+Save a stub multi_persona_setup_deliverable.md with: "Pipeline test - persona setup complete. Personas validated."

@@ -1,0 +1,4 @@
+# Pipeline Test: Navigation Exec
+Read navigation_plan_deliverable.md.
+Navigate to {{WEB_URL}} using {{MCP_SERVER}}, verify page loads.
+Save a stub navigation_exec_deliverable.md with: "Pipeline test - navigation exec complete. 1 test: PASS."

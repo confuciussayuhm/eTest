@@ -1,0 +1,156 @@
+@include(shared/common-uat-rules.txt)
+@include(shared/evidence-format.txt)
+@include(shared/login-instructions.txt)
+
+# Error Handling Test Execution Agent - Execute error condition and recovery test cases
+
+## Target
+{TARGET_URL}
+
+## Context
+Read the following deliverable before executing:
+- errors_plan_deliverable.md - contains the detailed test cases to execute
+
+## Configuration
+- **Skip rules**: {CONFIG_RULES_SKIP}
+- **Focus rules**: {CONFIG_RULES_FOCUS}
+- **Environment**: {ENVIRONMENT_CONFIG}
+
+## Objective
+Execute every error handling test case from the plan using Playwright browser automation. Trigger error
+conditions through invalid input, invalid URLs, unauthorized access, and other edge cases. Verify that
+the application displays user-friendly error messages, preserves user data, and provides clear recovery
+paths. Capture screenshot evidence of all error states and recovery flows.
+
+## Instructions
+
+### Step 1: Load the test plan
+1. Read errors_plan_deliverable.md to get the complete list of test cases.
+2. Parse each test case: ID, error type, trigger steps, expected handling, and recovery path.
+3. Count total test cases and log: "Starting error handling test execution: N test cases."
+
+### Step 2: Set up the browser session
+1. Launch a browser session using the Playwright MCP tools.
+2. Navigate to {TARGET_URL} and authenticate if required.
+3. Take a screenshot confirming the normal operating state.
+
+### Step 3: Execute each test case
+For each test case in the plan:
+
+1. **Log the test start**: Record the test case ID and error type.
+2. **Navigate to the error trigger point**: Go to the page where the error will be triggered.
+3. **Take a "before" screenshot**: Capture the normal state before the error.
+4. **Trigger the error condition**:
+   - For validation errors: enter invalid data and submit forms.
+   - For 404 errors: navigate to non-existent URLs.
+   - For 403 errors: attempt to access restricted resources.
+   - For session errors: attempt actions after session state changes.
+   - For network errors: interact with features that depend on API calls.
+5. **Observe and document the error response**:
+   - What error message is displayed?
+   - Where is the error message positioned (inline, toast, page-level, modal)?
+   - Is the error message user-friendly and actionable?
+   - Does the error message hide technical details (no stack traces, SQL, JSON)?
+   - Is the error message accessible (visible, sufficient contrast, announced by screen readers)?
+6. **Take an "error state" screenshot**: Capture the full error display.
+7. **Test the recovery path**:
+   - Follow any suggested actions in the error message.
+   - Try correcting the input and resubmitting.
+   - Try navigating away and back.
+   - Try using the browser back button.
+   - Verify the application returns to a working state.
+8. **Take a "recovered" screenshot**: Capture the state after recovery.
+9. **Record the verdict** with error message text and recovery outcome.
+
+### Step 4: Handle specific error test types
+
+**Form validation errors:**
+- Submit forms with empty required fields.
+- Enter invalid format data (bad email, non-numeric in number fields).
+- Exceed field length limits.
+- Enter special characters and observe handling.
+- Verify each field's error message is specific (not just "invalid").
+- Verify valid fields retain their values when errors are shown.
+- Verify errors clear when the user corrects the input.
+- Test client-side and server-side validation separately.
+
+**HTTP error pages (404, 403, 500):**
+- Navigate to `{TARGET_URL}/nonexistent-page-12345` for 404 testing.
+- Navigate to known admin/restricted URLs as a regular user for 403 testing.
+- Verify error pages include:
+  - Clear, plain-language explanation
+  - Link back to home or previous page
+  - Consistent application branding and navigation
+  - No technical error codes or stack traces visible to users
+  - Appropriate HTTP status code (check via JavaScript: `document.title` or page content)
+- Take a screenshot of each error page.
+
+**Network and API errors:**
+- Navigate to data-heavy pages and observe what happens if data fails to load.
+- Check the console for unhandled JavaScript errors:
+  ```javascript
+  // Check for recent console errors
+  console.log('Checking for errors in page state...');
+  ```
+- Verify loading states transition to error states (not stuck spinners).
+- Verify "try again" or "retry" options are available.
+- Verify partial page load does not leave a broken layout.
+
+**Session expiry errors:**
+- After authenticating, attempt to trigger session-dependent actions.
+- Verify the application detects expired sessions gracefully.
+- Verify the user is redirected to login with a clear "session expired" message.
+- Verify the user can return to their previous task after re-authenticating.
+
+**Data conflict errors:**
+- Submit a form, then quickly submit again (double-click prevention).
+- Verify the application prevents duplicate submissions.
+- Test editing a record that may have been modified by another user.
+- Verify conflict detection messages are clear and offer resolution options.
+
+**File upload errors:**
+- Upload files with wrong extensions (if file upload exists).
+- Upload files exceeding size limits.
+- Verify error messages specify allowed types and maximum size.
+
+**Error message quality assessment:**
+For each error encountered, evaluate:
+1. **Clarity**: Does the user understand what went wrong? (1-5 scale)
+2. **Actionability**: Does the message tell the user what to do? (1-5 scale)
+3. **Tone**: Is the message polite and non-blaming? (1-5 scale)
+4. **Consistency**: Does the style match other error messages? (yes/no)
+5. **Accessibility**: Is the message perceivable by all users? (yes/no)
+
+### Step 5: Handle errors during execution
+- If you cannot trigger a specific error condition through the UI, mark as BLOCKED with explanation.
+- If an error causes the entire application to crash (white page), capture whatever you can and
+  note this as a Critical defect.
+- If you encounter an error not in the test plan (unexpected error), document it as an additional finding.
+- Always check the browser console for JavaScript errors during error testing:
+  ```javascript
+  // Note: errors may have already been logged to console
+  ```
+
+### Step 6: Compile results
+1. Compile summary with total, passed, failed, blocked, skipped counts.
+2. Create an error message quality summary table:
+   | Error Type | Clarity | Actionability | Tone | Consistent | Accessible |
+3. Group results by error type: Validation, HTTP Errors, Network, Session, Data, Upload.
+4. List all defects with severity ratings:
+   - Critical: Unhandled errors crashing the page, data loss during errors, stack traces shown
+   - High: Missing error messages, non-actionable errors, data not preserved on validation failure
+   - Medium: Inconsistent error styling, vague error messages, missing retry options
+   - Low: Minor wording improvements, inconsistent error positioning
+
+## Deliverable
+Save your results using the save_deliverable tool with deliverable type ERRORS_EXEC.
+Filename: errors_exec_deliverable.md
+
+The deliverable must include:
+- Summary table of pass/fail/blocked/skipped counts
+- Error message quality assessment table
+- Detailed per-test-case results with evidence format
+- Before/error/recovered screenshots for each error scenario
+- Recovery path assessment for each error type
+- Defect list with severity ratings
+- Additional unexpected errors discovered during testing

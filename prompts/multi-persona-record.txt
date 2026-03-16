@@ -1,0 +1,121 @@
+@include(shared/common-uat-rules.txt)
+@include(shared/evidence-format.txt)
+@include(shared/login-instructions.txt)
+
+# Multi-Persona Record Agent - Record primary persona journeys for access control comparison
+
+## Target
+{TARGET_URL}
+
+## Context
+Read the following deliverables before recording:
+- multi_persona_setup_deliverable.md - to identify the primary persona and capability map
+
+## Configuration
+- **Skip rules**: {CONFIG_RULES_SKIP}
+- **Focus rules**: {CONFIG_RULES_FOCUS}
+- **Environment**: {ENVIRONMENT_CONFIG}
+- **Personas**: {PERSONAS_CONFIG}
+
+## Objective
+Record detailed user journeys performed as the primary (highest-privilege) persona. These recorded
+journeys will be replayed by other personas in the next phase to identify access control differences.
+Every journey must be documented with exact URLs, element identifiers, actions performed, and
+screenshots so they can be precisely replayed.
+
+## Instructions
+
+### Step 1: Load the setup deliverable
+1. Read multi_persona_setup_deliverable.md.
+2. Identify the primary persona (highest privilege level).
+3. Review the capability map to understand what the primary persona can access.
+4. Review the critical permission boundaries identified during setup.
+5. Prioritize recording journeys that exercise these permission boundaries.
+
+### Step 2: Authenticate as the primary persona
+1. Launch a browser session using the Playwright MCP tools.
+2. Navigate to {TARGET_URL}.
+3. Log in using the primary persona's credentials.
+4. Take a screenshot confirming the authenticated identity.
+5. Record the post-login URL as the journey starting point.
+
+### Step 3: Plan the journeys to record
+Based on the setup deliverable, plan journeys that cover:
+1. **Admin/management pages**: Navigate to every admin-only or management page.
+2. **Sensitive data views**: Access pages showing sensitive or restricted data.
+3. **Privileged actions**: Perform actions that require elevated permissions:
+   - Create resources
+   - Edit/modify existing resources
+   - Delete resources
+   - Change settings or configuration
+   - Manage users or permissions
+   - Access reports or analytics
+   - Export data
+4. **Data scope verification**: Access data views to establish the baseline of what data is visible.
+5. **Settings and configuration**: Access all settings pages.
+
+### Step 4: Record each journey
+For each journey:
+
+1. **Assign a journey ID**: MP-J-XXX (e.g., MP-J-001: "Access admin dashboard").
+2. **Record the starting point**: Current URL and page state.
+3. **Execute and record each step**:
+   - For each action, document:
+     a. **Step number**: Sequential step within the journey.
+     b. **Action type**: navigate / click / type / select / scroll / keypress
+     c. **Target element**: CSS selector, text content, or ARIA label of the element acted upon.
+     d. **Input data**: What was typed, selected, or entered (if applicable).
+     e. **URL before**: The URL before the action.
+     f. **URL after**: The URL after the action.
+     g. **Expected outcome**: What happened after the action (page loaded, modal opened,
+        data appeared, etc.).
+   - Use `browser_navigate` for navigation and record the URL.
+   - Use `browser_click` and record the element clicked.
+   - Use `browser_type` and record the field and value entered.
+   - Use `browser_snapshot` to capture the page state after each action.
+   - Use `browser_take_screenshot` at every step for baseline comparison.
+4. **Capture the journey outcome**: What was the final state? What data was visible?
+   What actions were available?
+5. **Tag the access level**: For this journey, tag what permission level is required:
+   - ADMIN_ONLY: Only the highest privilege persona should succeed.
+   - MANAGER_AND_ABOVE: Managers and admins should succeed.
+   - ALL_AUTHENTICATED: Any logged-in user should succeed.
+   - OWNER_ONLY: Only the data owner should succeed.
+
+### Step 5: Ensure journeys are replayable
+For each recorded journey, verify:
+1. The steps are specific enough that another agent can follow them exactly.
+2. Element identifiers are stable (prefer IDs, data-testid, or unique text over CSS position).
+3. URLs are captured at each step for direct navigation.
+4. Screenshots provide a visual reference for each step's expected state.
+5. Any test data created during recording is noted (so replay agents know what to expect).
+
+### Step 6: Record a diverse set of journeys
+Ensure the recorded journeys cover:
+- At least one journey for each permission boundary identified in setup.
+- At least one journey involving data creation (to test if lower-privilege users can create).
+- At least one journey involving data modification (to test edit permissions).
+- At least one journey involving data deletion (to test delete permissions).
+- At least one journey viewing sensitive/restricted data.
+- At least one journey accessing configuration/settings pages.
+
+### Step 7: Handle errors during recording
+- If a page fails to load for the primary persona, note it and skip that journey.
+- If an action fails unexpectedly, document the failure and move on.
+- If test data creation is needed but fails, note the dependency.
+- Take extra screenshots when unexpected behavior occurs.
+
+## Deliverable
+Save your recordings using the save_deliverable tool with deliverable type MULTI_PERSONA_RECORD.
+Filename: multi_persona_record_deliverable.md
+
+The deliverable must include:
+- Primary persona identification (name, role, privilege level)
+- Journey index table: ID, title, pages covered, access level tag, step count
+- For each journey:
+  - Step-by-step recording with: action, target element, URLs, input data, expected outcome
+  - Screenshots at every step (labeled by journey ID and step number)
+  - Access level tag for the journey
+  - Data created or modified during the journey
+- Total journeys recorded
+- Permission boundaries covered by the recordings

@@ -1,0 +1,45 @@
+export class ProgressIndicator {
+  private message: string;
+  private frames: string[] = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+  private frameIndex: number = 0;
+  private interval: ReturnType<typeof setInterval> | null = null;
+  private isRunning: boolean = false;
+
+  constructor(message: string = 'Working...') {
+    this.message = message;
+  }
+
+  start(): void {
+    if (this.isRunning) return;
+
+    this.isRunning = true;
+    this.frameIndex = 0;
+
+    this.interval = setInterval(() => {
+      // Clear the line and write the spinner
+      process.stdout.write(`\r${this.frames[this.frameIndex]!} ${this.message}`);
+      this.frameIndex = (this.frameIndex + 1) % this.frames.length;
+    }, 100);
+  }
+
+  update(message: string): void {
+    this.message = message;
+  }
+
+  stop(finalMessage?: string): void {
+    if (!this.isRunning) return;
+
+    if (this.interval) {
+      clearInterval(this.interval);
+      this.interval = null;
+    }
+
+    // Clear the spinner line
+    process.stdout.write('\r' + ' '.repeat(this.message.length + 5) + '\r');
+    this.isRunning = false;
+
+    if (finalMessage) {
+      console.log(`✓ ${finalMessage}`);
+    }
+  }
+}

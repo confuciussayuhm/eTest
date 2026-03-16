@@ -1,0 +1,81 @@
+services:
+  temporal:
+    image: temporalio/auto-setup:latest
+    ports:
+      - "127.0.0.1:7233:7233"   # gRPC
+      - "127.0.0.1:8233:8233"   # Web UI
+    volumes:
+      - temporal-data:/etc/temporal
+    environment:
+      - DB=sqlite
+      - SQLITE_DB_PATH=/etc/temporal/temporal.db
+    healthcheck:
+      test: ["CMD", "temporal", "operator", "cluster", "health", "--address", "localhost:7233"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  worker:
+    build: .
+    depends_on:
+      temporal:
+        condition: service_healthy
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL:-}
+      - ANTHROPIC_AUTH_TOKEN=${ANTHROPIC_AUTH_TOKEN:-}
+      - ROUTER_DEFAULT=${ROUTER_DEFAULT:-}
+      - CLAUDE_CODE_OAUTH_TOKEN=${CLAUDE_CODE_OAUTH_TOKEN:-}
+      - CLAUDE_CODE_USE_BEDROCK=${CLAUDE_CODE_USE_BEDROCK:-}
+      - AWS_REGION=${AWS_REGION:-}
+      - AWS_BEARER_TOKEN_BEDROCK=${AWS_BEARER_TOKEN_BEDROCK:-}
+      - CLAUDE_CODE_USE_VERTEX=${CLAUDE_CODE_USE_VERTEX:-}
+      - CLOUD_ML_REGION=${CLOUD_ML_REGION:-}
+      - ANTHROPIC_VERTEX_PROJECT_ID=${ANTHROPIC_VERTEX_PROJECT_ID:-}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS:-}
+      - ANTHROPIC_SMALL_MODEL=${ANTHROPIC_SMALL_MODEL:-}
+      - ANTHROPIC_MEDIUM_MODEL=${ANTHROPIC_MEDIUM_MODEL:-}
+      - ANTHROPIC_LARGE_MODEL=${ANTHROPIC_LARGE_MODEL:-}
+      - CLAUDE_CODE_MAX_OUTPUT_TOKENS=${CLAUDE_CODE_MAX_OUTPUT_TOKENS:-64000}
+    volumes:
+      - ./configs:/app/configs
+      - ./prompts:/app/prompts
+      - ./audit-logs:/app/audit-logs
+      - ${OUTPUT_DIR:-./audit-logs}:/app/output
+      - ./credentials:/app/credentials:ro
+    shm_size: 2gb
+    security_opt:
+      - seccomp:unconfined
+
+  # Optional: claude-code-router for multi-model support
+  # Start with: ROUTER=true ./testicles start ...
+  router:
+    image: node:22-slim
+    profiles: ["router"]
+    command: >
+      sh -c "apt-get update && apt-get install -y gettext-base &&
+             npm install -g @musistudio/claude-code-router &&
+             mkdir -p /root/.claude-code-router &&
+             envsubst < /config/router-config.json > /root/.claude-code-router/config.json &&
+             ccr start"
+    ports:
+      - "127.0.0.1:3456:3456"
+    volumes:
+      - ./configs/router-config.json:/config/router-config.json:ro
+    environment:
+      - HOST=0.0.0.0
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - ROUTER_DEFAULT=${ROUTER_DEFAULT:-}
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3456/health', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  temporal-data:

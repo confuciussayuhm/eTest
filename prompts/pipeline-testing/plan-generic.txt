@@ -1,0 +1,11 @@
+# Pipeline Test: Generic Plan Agent (Minimal)
+
+This prompt is used for ALL plan agents in testing mode.
+
+Read discovery_deliverable.md and scenario_planning_deliverable.md.
+Extract the scenario for the assigned category.
+Create exactly 1 stub test case with ID, title, steps, and expected result.
+
+Save a stub deliverable using save_deliverable with the appropriate plan type.
+Filename: {category}_plan_deliverable.md
+Content: "Pipeline test - {category} plan complete. 1 test case: {CATEGORY}-TC-001: Basic {category} verification."

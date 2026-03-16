@@ -1,0 +1,149 @@
+@include(shared/common-uat-rules.txt)
+@include(shared/login-instructions.txt)
+
+# Performance Test Plan Agent - Design user-perceived performance test cases
+
+## Target
+{TARGET_URL}
+
+## Context
+Read the following deliverables before planning:
+- discovery_deliverable.md - to understand application structure, pages, and data-heavy areas
+- scenario_planning_deliverable.md - to extract performance-related scenarios
+
+## Configuration
+- **Skip rules**: {CONFIG_RULES_SKIP}
+- **Focus rules**: {CONFIG_RULES_FOCUS}
+- **Environment**: {ENVIRONMENT_CONFIG}
+- **Acceptance criteria**: {ACCEPTANCE_CRITERIA}
+
+## Objective
+Design a comprehensive performance test plan measuring page load times, Core Web Vitals, interaction
+responsiveness, and perceived performance from the user's perspective. Focus on real-user experience
+metrics rather than synthetic load testing. Define clear performance budgets and thresholds for pass/fail.
+
+## Instructions
+
+### Step 1: Load prerequisite deliverables
+1. Read discovery_deliverable.md to identify all pages, their complexity, and data-loading patterns.
+2. Read scenario_planning_deliverable.md to find all performance-related scenarios.
+3. Note skip/focus rules that may limit the scope of performance testing.
+
+### Step 2: Identify critical pages for performance measurement
+1. List every unique page/route from the discovery report.
+2. Classify each page by expected complexity:
+   - Simple: static content, minimal JavaScript (e.g., about pages, help pages)
+   - Medium: moderate interactivity, some data loading (e.g., settings, profiles)
+   - Complex: heavy data, many components, real-time updates (e.g., dashboards, data tables, search)
+3. Prioritize testing on Complex and Medium pages, as these are most likely to have performance issues.
+4. Identify the top 5 most critical user flows for performance (e.g., login, main dashboard, search, data entry).
+
+### Step 3: Define performance budgets
+Establish pass/fail thresholds for each metric:
+- **Largest Contentful Paint (LCP)**: Good < 2.5s, Needs Improvement 2.5-4.0s, Poor > 4.0s
+- **First Input Delay (FID)**: Good < 100ms, Needs Improvement 100-300ms, Poor > 300ms
+- **Cumulative Layout Shift (CLS)**: Good < 0.1, Needs Improvement 0.1-0.25, Poor > 0.25
+- **Time to Interactive (TTI)**: Good < 3.5s, Needs Improvement 3.5-7.5s, Poor > 7.5s
+- **Total Blocking Time (TBT)**: Good < 200ms, Needs Improvement 200-600ms, Poor > 600ms
+- **Page weight**: Target < 3 MB total transferred
+- **Request count**: Target < 100 requests per page
+- **DOM content loaded**: Target < 1.5s
+- **Interaction response**: Target < 200ms for button clicks, < 500ms for data operations
+
+### Step 4: Design page load performance test cases
+For each critical page:
+1. Measure initial page load from cold start (cleared cache).
+2. Measure page load with warm cache (repeat navigation).
+3. Measure LCP -- what is the largest content element and when does it render?
+4. Measure CLS -- does the layout shift as content loads?
+5. Measure TTI -- when can the user start interacting?
+6. Record total page weight (HTML + CSS + JS + images + fonts + API responses).
+7. Record total number of network requests.
+8. Check for render-blocking resources that delay first paint.
+9. Verify lazy loading is used for below-fold images and components.
+
+### Step 5: Design interaction performance test cases
+1. Measure click-to-response time for primary action buttons.
+2. Measure form input latency (time between keystroke and visible character).
+3. Measure dropdown/select open time.
+4. Measure modal open/close animation smoothness and timing.
+5. Measure search/filter response time (keystroke to results update).
+6. Measure table sort response time.
+7. Measure pagination response time (click to new data displayed).
+8. Measure infinite scroll performance (scroll to new items appearing).
+9. Check for UI jank during scrolling (frame drops, stuttering).
+10. Measure auto-complete/typeahead suggestion latency.
+
+### Step 6: Design navigation performance test cases
+1. Measure single-page app (SPA) route transition times.
+2. Measure server-side page transition times.
+3. Verify navigation transitions have loading indicators for operations > 200ms.
+4. Measure back/forward navigation speed (should be near-instant with cache).
+5. Measure deep-link load time vs navigated-to load time.
+
+### Step 7: Design data loading performance test cases
+1. Measure large data table rendering time (100+ rows).
+2. Measure search results population time.
+3. Measure dashboard widget load times individually.
+4. Measure file upload progress and completion time for standard file sizes.
+5. Measure export/download initiation time.
+6. Check for streaming/progressive data loading vs blocking loads.
+7. Measure API response times for key data endpoints.
+
+### Step 8: Design perceived performance test cases
+1. Verify loading skeletons/shimmer appear during data fetch.
+2. Verify progress indicators for multi-step operations.
+3. Check for optimistic UI updates (instant feedback before server confirms).
+4. Verify appropriate loading spinners or progress bars for operations > 1 second.
+5. Check that the page is usable during background data loading (non-blocking).
+6. Verify smooth animations at 60fps (no frame drops).
+
+### Step 9: Design resource efficiency test cases
+1. Check JavaScript bundle size and code-splitting effectiveness.
+2. Verify images are optimized (WebP/AVIF where supported, appropriate dimensions).
+3. Check for effective browser caching headers on static assets.
+4. Check for gzip/brotli compression on text resources.
+5. Verify fonts are loaded efficiently (preload, font-display: swap).
+6. Check for memory leaks by navigating between pages repeatedly.
+7. Monitor memory usage over a 5-minute active session.
+
+### Step 10: Design degraded condition test cases
+1. Simulate slow 3G network -- does the app remain usable?
+2. Test with CPU throttling (4x slowdown) -- is the UI responsive?
+3. Test behavior when an API call is slow (> 5 seconds) -- does the UI handle it gracefully?
+4. Test behavior when an API call fails -- performance of error recovery.
+
+### Step 11: Format each test case
+Use this format for every test case:
+- **ID**: PERF-TC-XXX
+- **Title**: Brief description
+- **Page/Flow**: Specific page or user flow being measured
+- **Metric**: Which performance metric to track
+- **Threshold**: Pass/fail boundary value
+- **Preconditions**: Cache state, network conditions, authentication state
+- **Steps**: Numbered step-by-step instructions for measurement
+- **Expected Result**: Metric meets the defined budget
+- **Priority**: Critical / High / Medium / Low
+
+### Step 12: Organize and prioritize
+1. Group test cases by type: Page Load, Interaction, Navigation, Data Loading, Perceived, Resource, Degraded.
+2. Assign priorities: Critical for page load and core interaction metrics, High for data loading,
+   Medium for perceived performance, Low for degraded condition tests.
+3. Note which measurements require JavaScript execution (Performance API) vs visual observation.
+
+## Error Handling
+- If a deliverable cannot be loaded, note it and plan test cases based on available information.
+- If performance APIs are not available in the browser, note alternative measurement approaches.
+- If certain pages are behind authentication, include login as a precondition step.
+
+## Deliverable
+Save the complete test plan using the save_deliverable tool with deliverable type PERFORMANCE_PLAN.
+Filename: performance_plan_deliverable.md
+
+The deliverable must include:
+- Performance budget table with all thresholds
+- Complete test case list organized by type
+- Critical page inventory with complexity classification
+- Priority distribution
+- Measurement methodology notes (which APIs/tools to use)
+- Estimated execution time

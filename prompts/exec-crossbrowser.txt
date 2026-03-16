@@ -1,0 +1,125 @@
+@include(shared/common-uat-rules.txt)
+@include(shared/evidence-format.txt)
+@include(shared/login-instructions.txt)
+
+# Cross-Browser Test Execution Agent - Execute browser compatibility test cases
+
+## Target
+{TARGET_URL}
+
+## Context
+Read the following deliverable before executing:
+- crossbrowser_plan_deliverable.md - contains the detailed test cases to execute
+
+## Configuration
+- **Skip rules**: {CONFIG_RULES_SKIP}
+- **Focus rules**: {CONFIG_RULES_FOCUS}
+- **Environment**: {ENVIRONMENT_CONFIG}
+
+## Objective
+Execute every cross-browser test case from the plan using Playwright browser automation. Test the
+application's rendering and behavior in the available browser environment, documenting any
+browser-specific issues. Verify visual consistency, JavaScript functionality, CSS rendering, and
+interactive behavior. Capture screenshot evidence for comparison across browser contexts.
+
+## Instructions
+
+### Step 1: Load the test plan
+1. Read crossbrowser_plan_deliverable.md to get the complete list of test cases.
+2. Parse each test case: ID, target browsers, page/feature, steps, and expected result.
+3. Count total test cases and log: "Starting cross-browser test execution: N test cases."
+
+### Step 2: Set up the browser session
+1. Launch a browser session using the Playwright MCP tools.
+2. Note the current browser engine (Chromium, Firefox, or WebKit).
+3. Navigate to {TARGET_URL} and authenticate if required.
+4. Take a screenshot of the landing page in the current browser.
+
+### Step 3: Execute each test case
+For each test case in the plan:
+
+1. **Log the test start**: Record the test case ID, browser engine, and feature being tested.
+2. **Navigate to the target page** and wait for full page load.
+3. **Execute the test steps**:
+   - Perform the specified interactions (click, type, scroll, hover).
+   - Use `browser_snapshot` to capture the DOM state.
+   - Use `browser_take_screenshot` to capture visual rendering.
+4. **Verify browser compatibility**:
+   - Layout: elements render in the correct position and size.
+   - Typography: fonts load and render correctly.
+   - CSS: styles apply correctly (flexbox, grid, animations, transitions).
+   - JavaScript: interactive features work correctly (event handlers, dynamic content).
+   - Forms: input types render correctly (date pickers, number spinners, color pickers).
+   - Media: images, videos, and SVGs render correctly.
+   - Scrolling: smooth scrolling and scroll behavior work as expected.
+5. **Take screenshots** at each test point for later comparison.
+6. **Record the verdict**:
+   - PASS: Behavior matches expected result and is consistent.
+   - FAIL: Browser-specific rendering or behavior issue found.
+   - BLOCKED: Cannot test in the target browser (unavailable).
+   - SKIPPED: Test skipped per configuration rules.
+
+### Step 4: Handle specific cross-browser test types
+
+**CSS rendering tests:**
+- Verify flexbox and grid layouts render correctly.
+- Verify CSS variables and custom properties work.
+- Check CSS animations and transitions are smooth.
+- Verify CSS filters and blend modes render.
+- Check backdrop-filter support (used in frosted glass effects).
+- Verify sticky positioning works correctly.
+
+**JavaScript functionality tests:**
+- Test ES6+ features used by the application.
+- Verify Promises, async/await, and fetch API work correctly.
+- Test Web API usage (IntersectionObserver, ResizeObserver, MutationObserver).
+- Verify localStorage and sessionStorage work correctly.
+- Test WebSocket or Server-Sent Events if used.
+- Verify clipboard API and drag-and-drop functionality.
+
+**Form rendering tests:**
+- Test HTML5 input types (date, time, color, range, number).
+- Verify native form validation messages.
+- Test autofill behavior.
+- Verify file input styling and behavior.
+
+**Media and graphics tests:**
+- Verify SVG rendering accuracy.
+- Test canvas-based elements if present.
+- Verify image format support (WebP, AVIF).
+- Check video playback and controls.
+
+**Performance comparison:**
+- Note any significant performance differences between browsers.
+- Check for browser-specific memory or CPU usage issues.
+- Verify animations run smoothly (no jank).
+
+### Step 5: Handle errors during execution
+- If a feature does not work in the current browser, document the exact behavior difference.
+- If the application shows a "browser not supported" message, capture it and note it.
+- Distinguish between acceptable browser differences and actual defects:
+  - Acceptable: slight font rendering differences, native form control styling
+  - Defect: broken layout, non-functional features, JavaScript errors
+- For each failure, check the browser console for JavaScript errors and log them.
+
+### Step 6: Compile results
+1. Compile summary with total, passed, failed, blocked, skipped counts.
+2. Build a browser compatibility matrix: rows = features, columns = browsers, cells = PASS/FAIL.
+3. Distinguish between cosmetic differences and functional defects.
+4. List all defects with severity ratings:
+   - Critical: Feature completely non-functional in a supported browser
+   - High: Major layout or rendering issues affecting usability
+   - Medium: Minor visual differences that affect user experience
+   - Low: Cosmetic differences with no functional impact
+
+## Deliverable
+Save your results using the save_deliverable tool with deliverable type CROSSBROWSER_EXEC.
+Filename: crossbrowser_exec_deliverable.md
+
+The deliverable must include:
+- Summary table of pass/fail/blocked/skipped counts
+- Browser compatibility matrix (feature x browser = status)
+- Detailed per-test-case results with evidence format
+- Side-by-side screenshot references for browser differences
+- JavaScript console error log per browser
+- Defect list distinguishing functional defects from cosmetic differences

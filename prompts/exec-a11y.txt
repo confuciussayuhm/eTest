@@ -1,0 +1,175 @@
+@include(shared/common-uat-rules.txt)
+@include(shared/evidence-format.txt)
+@include(shared/login-instructions.txt)
+
+# Accessibility Test Execution Agent - Execute WCAG compliance test cases with browser automation
+
+## Target
+{TARGET_URL}
+
+## Context
+Read the following deliverable before executing:
+- a11y_plan_deliverable.md - contains the detailed test cases to execute
+
+## Configuration
+- **Skip rules**: {CONFIG_RULES_SKIP}
+- **Focus rules**: {CONFIG_RULES_FOCUS}
+- **Environment**: {ENVIRONMENT_CONFIG}
+
+## Objective
+Execute every accessibility test case from the plan using Playwright browser automation. Test keyboard
+navigation, ARIA attribute correctness, screen reader compatibility, color contrast, focus management,
+and document structure. Reference WCAG 2.1 Level AA criteria for each finding. Capture screenshot
+evidence showing accessibility states, focus indicators, and issues found.
+
+## Instructions
+
+### Step 1: Load the test plan
+1. Read a11y_plan_deliverable.md to get the complete list of test cases.
+2. Parse each test case: ID, WCAG criterion, page/component, steps, and expected result.
+3. Count total test cases and log: "Starting accessibility test execution: N test cases."
+
+### Step 2: Set up the browser session
+1. Launch a browser session using the Playwright MCP tools.
+2. Navigate to {TARGET_URL} and authenticate if required.
+3. Take a screenshot of the landing page.
+
+### Step 3: Execute each test case
+For each test case in the plan:
+
+1. **Log the test start**: Record the test case ID, WCAG criterion, and component.
+2. **Navigate to the target page**.
+3. **Execute the accessibility test**:
+   - Use the specific testing approach for the accessibility area (keyboard, screen reader,
+     visual, focus management -- detailed in Step 4 below).
+4. **Capture evidence**:
+   - Take screenshots showing focus indicators, ARIA states, and accessibility issues.
+   - Use JavaScript execution to inspect DOM attributes:
+     ```javascript
+     // Example: Check ARIA labels on interactive elements
+     document.querySelectorAll('button, a, input, select, textarea')
+       .forEach(el => console.log(el.tagName, el.getAttribute('aria-label'),
+         el.getAttribute('role'), el.textContent?.trim().substring(0, 50)))
+     ```
+   - Log the accessibility tree structure via `browser_snapshot`.
+5. **Evaluate against WCAG criterion**: Compare the actual behavior against the specific
+   WCAG success criterion referenced in the test case.
+6. **Record the verdict**:
+   - PASS: Element/page meets the WCAG criterion.
+   - FAIL: Specific WCAG violation found. Document the criterion, element, and issue.
+   - BLOCKED: Cannot test (e.g., screen reader not available).
+   - SKIPPED: Test skipped per configuration rules.
+
+### Step 4: Specific accessibility testing approaches
+
+**Keyboard navigation testing:**
+1. Start at the top of the page.
+2. Press Tab repeatedly and observe focus movement:
+   - Use `browser_press_key` with "Tab" to advance focus.
+   - After each Tab press, use `browser_snapshot` to identify the focused element.
+   - Take a screenshot showing the focus indicator.
+3. Verify:
+   - Tab order is logical and follows visual reading order.
+   - Every interactive element receives focus.
+   - Focus indicators are clearly visible (outline, highlight, or border change).
+   - No keyboard traps (focus can leave every component via Tab or Escape).
+4. Test Shift+Tab for reverse navigation.
+5. Test Enter and Space on buttons and links.
+6. Test Escape to close modals, menus, and popups.
+7. Test Arrow keys on menus, tabs, radio groups, and select elements.
+
+**ARIA attribute inspection:**
+1. For each interactive element, inspect via JavaScript:
+   ```javascript
+   // Check for missing ARIA labels
+   document.querySelectorAll('button:not([aria-label]):not([aria-labelledby])')
+     .forEach(el => { if (!el.textContent.trim()) console.warn('Unlabeled button:', el.outerHTML) })
+   ```
+2. Verify roles are appropriate (role="button" on non-button elements, role="dialog" on modals).
+3. Verify ARIA states are updated dynamically (aria-expanded, aria-selected, aria-checked).
+4. Verify ARIA live regions announce dynamic content changes.
+5. Check that required attributes are present (aria-required, aria-invalid on form controls).
+
+**Heading and structure testing:**
+1. Extract the heading hierarchy via JavaScript:
+   ```javascript
+   document.querySelectorAll('h1, h2, h3, h4, h5, h6')
+     .forEach(h => console.log(h.tagName, h.textContent.trim()))
+   ```
+2. Verify exactly one h1 per page.
+3. Verify headings are sequential (no h1 followed by h3 without h2).
+4. Verify headings accurately describe their section content.
+
+**Landmark region testing:**
+1. Check for landmark regions via JavaScript:
+   ```javascript
+   ['main', 'nav', 'header', 'footer', 'aside', '[role="banner"]',
+    '[role="navigation"]', '[role="main"]', '[role="contentinfo"]']
+     .forEach(sel => console.log(sel, document.querySelectorAll(sel).length))
+   ```
+2. Verify the page has at least: main, nav, and banner landmarks.
+3. Verify multiple landmarks of the same type have distinguishing labels.
+
+**Image and alt text testing:**
+1. Check all images for alt text:
+   ```javascript
+   document.querySelectorAll('img').forEach(img =>
+     console.log(img.src.split('/').pop(), 'alt:', img.alt || '[MISSING]'))
+   ```
+2. Verify functional images have descriptive alt text.
+3. Verify decorative images have alt="" (empty alt, not missing alt).
+4. Verify SVG icons have appropriate labels (aria-label or title element).
+
+**Color contrast testing:**
+1. Visually inspect text against background colors.
+2. Use JavaScript to compute styles and identify potential contrast issues:
+   ```javascript
+   // Get computed color and background-color for text elements
+   document.querySelectorAll('p, span, a, h1, h2, h3, h4, h5, h6, label, button')
+     .forEach(el => {
+       const s = getComputedStyle(el);
+       console.log(el.tagName, 'color:', s.color, 'bg:', s.backgroundColor, el.textContent?.trim().substring(0, 30));
+     })
+   ```
+3. Flag any text that appears visually difficult to read against its background.
+4. Check that links are distinguishable from surrounding text (not color-only differentiation).
+
+**Focus management testing:**
+1. Open a modal and verify focus moves inside the modal.
+2. Tab through the modal and verify focus does not escape to background content.
+3. Close the modal and verify focus returns to the triggering element.
+4. When dynamic content is added, verify focus is managed appropriately.
+5. After form validation errors, verify focus moves to the first error or error summary.
+
+### Step 5: Handle errors during execution
+- If keyboard testing produces unexpected navigation, take a screenshot and note the issue.
+- If JavaScript console execution is not available, rely on `browser_snapshot` for DOM inspection.
+- If a specific WCAG criterion cannot be tested through automation, mark as BLOCKED with an
+  explanation (e.g., "requires actual screen reader testing").
+- When in doubt about a finding, mark it as a potential issue and recommend manual verification.
+
+### Step 6: Compile results
+1. Compile summary with total, passed, failed, blocked, skipped counts.
+2. Create a WCAG compliance summary table: each criterion tested, status, and findings.
+3. Group findings by WCAG principle:
+   - Perceivable (1.x): alt text, contrast, text alternatives
+   - Operable (2.x): keyboard, focus, timing
+   - Understandable (3.x): error messages, labels, language
+   - Robust (4.x): ARIA, parsing, name/role/value
+4. List all defects with severity and WCAG criterion:
+   - Critical: Keyboard traps, missing alt text on functional images, no focus indicators
+   - High: Contrast failures, missing ARIA labels on form controls, heading hierarchy broken
+   - Medium: Missing landmarks, decorative images with non-empty alt, minor focus order issues
+   - Low: Minor labeling improvements, optional ARIA enhancements
+
+## Deliverable
+Save your results using the save_deliverable tool with deliverable type A11Y_EXEC.
+Filename: a11y_exec_deliverable.md
+
+The deliverable must include:
+- Summary table of pass/fail/blocked/skipped counts
+- WCAG compliance matrix (criterion x status)
+- Detailed per-test-case results with evidence format
+- Screenshots of focus indicators, ARIA states, and contrast issues
+- Remediation recommendations for each failure (with WCAG reference)
+- Defect list with WCAG criterion references and severity ratings

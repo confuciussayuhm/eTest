@@ -1,0 +1,150 @@
+@include(shared/common-uat-rules.txt)
+@include(shared/evidence-format.txt)
+@include(shared/login-instructions.txt)
+
+# Multi-Persona Replay Agent - Replay journeys as other personas to detect access control differences
+
+## Target
+{TARGET_URL}
+
+## Context
+Read the following deliverables before replaying:
+- multi_persona_setup_deliverable.md - to understand all personas and their expected access levels
+- multi_persona_record_deliverable.md - to get the recorded journeys to replay
+
+## Configuration
+- **Skip rules**: {CONFIG_RULES_SKIP}
+- **Focus rules**: {CONFIG_RULES_FOCUS}
+- **Environment**: {ENVIRONMENT_CONFIG}
+- **Personas**: {PERSONAS_CONFIG}
+
+## Objective
+Replay every recorded primary persona journey as each non-primary persona. At every step, document
+whether the persona experiences the same result as the primary persona, restricted access, complete
+denial, or sees different data. Build a comprehensive comparison showing exactly where access control
+enforcement happens and where it may be lacking.
+
+## Instructions
+
+### Step 1: Load prerequisite deliverables
+1. Read multi_persona_setup_deliverable.md to get the full persona list and their expected permissions.
+2. Read multi_persona_record_deliverable.md to get all recorded journeys with their steps.
+3. Build a matrix of: personas (rows) x journeys (columns) to track progress.
+4. Identify which non-primary personas need to replay which journeys.
+
+### Step 2: Plan the replay sequence
+1. Order non-primary personas from highest to lowest privilege.
+2. For each persona, plan to replay ALL recorded journeys.
+3. This ensures complete coverage: every persona x every journey = one comparison.
+
+### Step 3: Replay journeys for each non-primary persona
+For each non-primary persona:
+
+1. **Authenticate as the persona**:
+   - Launch or reuse the browser session.
+   - Navigate to {TARGET_URL}.
+   - Log in using the current persona's credentials.
+   - Take a screenshot confirming the authenticated identity.
+   - Record the post-login URL and visible features.
+
+2. **Replay each recorded journey**:
+   For each journey from the recording deliverable:
+
+   a. **Log the replay start**: Record persona name, journey ID, and journey title.
+   b. **Follow each recorded step**:
+      - Attempt the exact same action as the primary persona performed:
+        - Navigate to the same URL.
+        - Click the same element (or attempt to find it).
+        - Type the same data into the same fields.
+      - After each step, observe the outcome and classify it:
+
+        **SAME**: The persona sees the same result as the primary persona.
+        The page loads, the element is clickable, the data is visible.
+
+        **RESTRICTED**: The page loads but with reduced functionality.
+        Some buttons are missing, some data is hidden, some actions are disabled.
+        Document exactly what is missing compared to the primary's experience.
+
+        **BLOCKED**: Access is completely denied.
+        The persona gets a 403 page, is redirected to an unauthorized page,
+        or the navigation element does not exist.
+        Document the denial mechanism (403 page, redirect URL, error message).
+
+        **DIFFERENT_DATA**: The page loads but shows different data.
+        The persona sees their own data instead of all data, or sees a filtered view.
+        Document what data is visible vs what the primary persona saw.
+
+        **ERROR**: An unexpected error occurs (application crash, 500 error, broken page).
+        This may indicate an authorization check that crashes instead of gracefully denying.
+
+      - Take a screenshot at every step showing the persona's actual experience.
+      - Use `browser_snapshot` to compare the DOM structure against the primary's recording.
+
+   c. **Record the per-step comparison**:
+      For each step, create a comparison entry:
+      - Journey ID and step number
+      - Primary persona's result (from recording)
+      - Current persona's result
+      - Classification: SAME / RESTRICTED / BLOCKED / DIFFERENT_DATA / ERROR
+      - Screenshot reference
+      - Notes on specific differences observed
+
+   d. **Record the journey-level verdict**:
+      - ACCESS_SAME: Persona has identical access throughout the journey.
+      - ACCESS_RESTRICTED: Persona can follow the journey but with reduced capabilities.
+      - ACCESS_DENIED: Persona is blocked at some point and cannot complete the journey.
+      - ACCESS_UNEXPECTED: Persona has access that contradicts expected permissions.
+
+3. **Log out** completely before switching to the next persona.
+
+### Step 4: Handle specific replay scenarios
+
+**When an element does not exist:**
+- If a button/link from the recording is not present for this persona, record as RESTRICTED.
+- Check if the element is hidden via CSS (display:none) or truly absent from the DOM.
+- If hidden via CSS only, note this as "UI-only enforcement" -- it may be bypassable.
+
+**When a URL is directly inaccessible:**
+- If navigating to a recorded URL results in a 403 or redirect, record as BLOCKED.
+- Note the specific denial response (HTTP status, error page content, redirect destination).
+
+**When data differs:**
+- If the page loads but shows fewer records or different records, record as DIFFERENT_DATA.
+- Note the primary persona's data count vs this persona's data count.
+- Note any specific records visible to primary but not to this persona.
+
+**When an unexpected access is found:**
+- If a persona with expected restrictions can access a page they should not, flag this as a
+  critical finding: "UNEXPECTED ACCESS: [persona] accessed [resource] which should be restricted."
+- Take extra screenshots and document the full evidence.
+
+### Step 5: Handle errors during replay
+- If login fails for a persona, mark ALL journeys for that persona as BLOCKED.
+- If the application state changed since recording (data deleted, configuration changed),
+  note the discrepancy and adapt the replay accordingly.
+- If a journey cannot be completed because a preceding step was blocked, mark remaining
+  steps as CASCADING_BLOCK.
+- Always take a screenshot even on blocked or error states.
+
+### Step 6: Compile results
+1. Build the complete comparison matrix:
+   - Rows: personas (non-primary)
+   - Columns: journeys x steps
+   - Cells: SAME / RESTRICTED / BLOCKED / DIFFERENT_DATA / ERROR
+2. Compile per-persona summary:
+   | Persona | Journeys Replayed | Same | Restricted | Blocked | Unexpected Access |
+3. Highlight all unexpected access findings (highest priority).
+4. List enforcement mechanisms observed (403 pages, redirects, hidden elements, disabled buttons).
+
+## Deliverable
+Save your results using the save_deliverable tool with deliverable type MULTI_PERSONA_REPLAY.
+Filename: multi_persona_replay_deliverable.md
+
+The deliverable must include:
+- Replay progress matrix: persona x journey = status
+- Per-persona, per-journey, per-step comparison against primary persona
+- Access classification for every step: SAME / RESTRICTED / BLOCKED / DIFFERENT_DATA / ERROR
+- Unexpected access findings flagged prominently
+- Screenshots showing access differences at each step
+- Enforcement mechanism observations (how access control is implemented)
+- Summary counts per persona: same, restricted, blocked, unexpected

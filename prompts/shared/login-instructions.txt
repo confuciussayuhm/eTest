@@ -1,0 +1,31 @@
+<!-- BEGIN:COMMON -->
+## Login Instructions
+
+Follow these steps to authenticate with the application:
+
+{{user_instructions}}
+<!-- END:COMMON -->
+
+<!-- BEGIN:FORM -->
+### Form-Based Login
+1. Navigate to the login page
+2. Fill in the form fields as instructed above
+3. Submit the form
+4. Wait for redirect or success indicator
+<!-- END:FORM -->
+
+<!-- BEGIN:SSO -->
+### SSO Login
+1. Navigate to the SSO login page
+2. Follow the SSO flow as instructed above
+3. Complete any MFA challenges
+4. Wait for redirect back to application
+<!-- END:SSO -->
+
+<!-- BEGIN:VERIFICATION -->
+### Verification
+After login, verify you are authenticated by checking:
+- The page URL matches the expected post-login path
+- User-specific content is visible
+- Session cookies are set
+<!-- END:VERIFICATION -->

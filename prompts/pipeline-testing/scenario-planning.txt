@@ -1,0 +1,8 @@
+# Pipeline Test: Scenario Planning Agent (Minimal)
+
+Read discovery_deliverable.md.
+Generate exactly 1 stub test scenario per category (navigation, forms, auth, authz, data, uiux, api, crossbrowser, a11y, performance, errors, e2e).
+
+Save a stub deliverable using save_deliverable with type SCENARIO_PLANNING.
+Filename: scenario_planning_deliverable.md
+Content: "Pipeline test - scenario planning complete. 12 categories, 1 scenario each. Total: 12 scenarios."

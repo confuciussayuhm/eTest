@@ -1,0 +1,222 @@
+@include(shared/common-uat-rules.txt)
+@include(shared/login-instructions.txt)
+
+# UAT Report Agent - Assemble comprehensive UAT sign-off report
+
+## Target
+{TARGET_URL}
+
+## Context
+Read ALL deliverables from every phase of testing. The complete list of deliverables to load:
+
+**Discovery and Planning:**
+- discovery_deliverable.md
+- scenario_planning_deliverable.md
+
+**Test Plans (12 categories):**
+- navigation_plan_deliverable.md
+- forms_plan_deliverable.md
+- auth_plan_deliverable.md
+- authz_plan_deliverable.md
+- data_plan_deliverable.md
+- uiux_plan_deliverable.md
+- api_plan_deliverable.md
+- crossbrowser_plan_deliverable.md
+- a11y_plan_deliverable.md
+- performance_plan_deliverable.md
+- errors_plan_deliverable.md
+- e2e_plan_deliverable.md
+
+**Test Execution Results (12 categories):**
+- navigation_exec_deliverable.md
+- forms_exec_deliverable.md
+- auth_exec_deliverable.md
+- authz_exec_deliverable.md
+- data_exec_deliverable.md
+- uiux_exec_deliverable.md
+- api_exec_deliverable.md
+- crossbrowser_exec_deliverable.md
+- a11y_exec_deliverable.md
+- performance_exec_deliverable.md
+- errors_exec_deliverable.md
+- e2e_exec_deliverable.md
+
+**Multi-Persona Analysis:**
+- multi_persona_setup_deliverable.md
+- multi_persona_record_deliverable.md
+- multi_persona_replay_deliverable.md
+- multi_persona_analysis_deliverable.md
+
+## Configuration
+- **Skip rules**: {CONFIG_RULES_SKIP}
+- **Focus rules**: {CONFIG_RULES_FOCUS}
+- **Environment**: {ENVIRONMENT_CONFIG}
+- **Acceptance criteria**: {ACCEPTANCE_CRITERIA}
+
+## Objective
+Read all test deliverables and assemble a comprehensive UAT sign-off report suitable for stakeholder
+review. Aggregate pass/fail counts across all categories, identify the most critical findings, assess
+overall risk, and provide a clear recommendation on whether the application is ready for release.
+
+## Instructions
+
+### Step 1: Load all deliverables
+1. Load every deliverable listed in the Context section above.
+2. For any deliverable that cannot be loaded (missing or empty), note it as a gap.
+3. Count how many deliverables were successfully loaded vs expected.
+4. Log: "Loaded X of Y expected deliverables."
+
+### Step 2: Aggregate test results across all categories
+1. For each of the 12 test execution deliverables, extract:
+   - Total tests planned
+   - Total tests executed
+   - Passed count
+   - Failed count
+   - Blocked count
+   - Skipped count
+2. Calculate aggregate totals across all categories:
+   - Grand total tests planned
+   - Grand total tests executed
+   - Grand total passed / failed / blocked / skipped
+   - Overall pass rate percentage
+3. Calculate per-category pass rates.
+
+### Step 3: Compile the defect summary
+1. Collect all defects from every execution deliverable.
+2. Categorize each defect by:
+   - Category (navigation, forms, auth, authz, data, uiux, api, crossbrowser, a11y, performance, errors, e2e)
+   - Severity (Critical, High, Medium, Low)
+   - Status (Open -- all defects from UAT are open by default)
+3. Create a defect distribution table:
+   | Severity | Navigation | Forms | Auth | Authz | Data | UI/UX | API | CrossBrowser | A11y | Performance | Errors | E2E | Total |
+4. Highlight all Critical and High severity defects individually with:
+   - Defect ID, category, description, impact, and screenshot references.
+5. Count total defects by severity.
+
+### Step 4: Assess acceptance criteria coverage
+1. From the scenario_planning_deliverable.md, extract all acceptance criteria.
+2. For each acceptance criterion, determine:
+   - Was it mapped to test cases? (covered or not covered)
+   - Was it tested? (executed or not executed)
+   - Did it pass or fail? (based on the relevant exec deliverable results)
+3. Build an acceptance criteria coverage table:
+   | Criterion ID | Description | Test Cases | Tested | Result | Evidence |
+4. Calculate acceptance criteria coverage percentage.
+5. List any acceptance criteria that were NOT covered by any test case.
+
+### Step 5: Summarize multi-persona access control results
+1. From multi_persona_analysis_deliverable.md, extract:
+   - Overall access control verdict (PASS/FAIL/CONDITIONAL PASS)
+   - Number of privilege escalation findings by severity
+   - Number of data leakage findings by severity
+   - Enforcement mechanism assessment
+2. Summarize the key access control findings.
+3. Note any personas that could not be tested.
+
+### Step 6: Perform risk assessment
+1. Identify unmitigated risks based on:
+   - Critical and high-severity defects that are open
+   - Acceptance criteria that failed or were not tested
+   - Categories with low pass rates
+   - Areas with limited test coverage (blocked or skipped tests)
+   - Access control issues from multi-persona testing
+2. Categorize risks:
+   - **Release-blocking risks**: Issues that would cause significant user impact or data loss
+   - **Monitored risks**: Issues that should be tracked but may not block release
+   - **Accepted risks**: Known limitations with documented workarounds
+3. Provide risk mitigation recommendations for each identified risk.
+
+### Step 7: Determine the overall verdict
+Based on the aggregated results, assign an overall verdict:
+
+**PASS - Ready for Release:**
+- Overall pass rate >= 95%
+- Zero Critical defects
+- Zero unresolved High defects affecting core functionality
+- All Critical and High priority acceptance criteria pass
+- Access control verdict is PASS
+
+**CONDITIONAL PASS - Ready with Conditions:**
+- Overall pass rate >= 85%
+- Zero Critical defects
+- Some High defects that have workarounds or are in non-critical areas
+- Most acceptance criteria pass, with documented exceptions
+- Access control verdict is CONDITIONAL PASS or PASS
+- List specific conditions that must be met before or shortly after release
+
+**FAIL - Not Ready for Release:**
+- Overall pass rate < 85%, OR
+- Any Critical defects remain open, OR
+- Core business workflows fail, OR
+- Access control verdict is FAIL, OR
+- Multiple High priority acceptance criteria fail
+- List blocking issues that must be resolved before re-testing
+
+### Step 8: Write the report
+Assemble the final report with all sections from the structure below.
+
+### Step 9: Handle gaps
+- If some deliverables are missing, note the gap and exclude that category from aggregation.
+- If a category was completely blocked, note it and adjust expectations.
+- Do not fabricate data for missing deliverables -- report what is available.
+
+## Deliverable
+Save your report using the save_deliverable tool with deliverable type UAT_REPORT.
+Filename: uat_report_deliverable.md
+
+The report must follow this structure:
+```markdown
+# UAT Sign-Off Report
+
+## 1. Executive Summary
+- **Application**: {TARGET_URL}
+- **Test Period**: [dates from deliverable timestamps]
+- **Overall Verdict**: PASS / CONDITIONAL PASS / FAIL
+- **Key Metrics**:
+  - Total Tests: X | Passed: X | Failed: X | Blocked: X | Skipped: X
+  - Pass Rate: X%
+  - Critical Defects: X | High Defects: X
+  - Acceptance Criteria Coverage: X%
+
+## 2. Test Coverage Summary
+| Category | Planned | Executed | Passed | Failed | Blocked | Skipped | Pass Rate |
+|----------|---------|----------|--------|--------|---------|---------|-----------|
+[one row per category, plus totals row]
+
+## 3. Results by Category
+### 3.1 Navigation
+[summary, key findings, pass rate]
+### 3.2 Forms
+[summary, key findings, pass rate]
+[...repeat for all 12 categories...]
+
+## 4. Multi-Persona Access Control Summary
+- Access Control Verdict: [verdict]
+- [key findings]
+
+## 5. Defect Summary
+### 5.1 Defect Distribution
+[severity x category matrix]
+### 5.2 Critical and High Defects
+[detailed list of each critical/high defect]
+
+## 6. Acceptance Criteria Coverage
+[coverage table and gap analysis]
+
+## 7. Risk Assessment
+### 7.1 Release-Blocking Risks
+### 7.2 Monitored Risks
+### 7.3 Accepted Risks
+
+## 8. Sign-Off Recommendation
+- **Verdict**: [PASS / CONDITIONAL PASS / FAIL]
+- **Recommendation**: [detailed recommendation]
+- **Conditions** (if conditional): [list of conditions]
+- **Blocking Issues** (if fail): [list of issues to resolve]
+
+## 9. Appendix
+- Deliverables loaded
+- Test environment details
+- Personas tested
+- Screenshot evidence index
+```

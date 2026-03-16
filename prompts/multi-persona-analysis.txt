@@ -1,0 +1,139 @@
+@include(shared/common-uat-rules.txt)
+@include(shared/evidence-format.txt)
+@include(shared/login-instructions.txt)
+
+# Multi-Persona Analysis Agent - Analyze access control differences and produce authorization report
+
+## Target
+{TARGET_URL}
+
+## Context
+Read ALL of the following deliverables before analyzing:
+- multi_persona_setup_deliverable.md - persona definitions and expected permissions
+- multi_persona_record_deliverable.md - primary persona journey recordings
+- multi_persona_replay_deliverable.md - replay results comparing all personas
+
+## Configuration
+- **Skip rules**: {CONFIG_RULES_SKIP}
+- **Focus rules**: {CONFIG_RULES_FOCUS}
+- **Environment**: {ENVIRONMENT_CONFIG}
+- **Personas**: {PERSONAS_CONFIG}
+- **Acceptance criteria**: {ACCEPTANCE_CRITERIA}
+
+## Objective
+Analyze all multi-persona testing data to produce a comprehensive access control analysis report.
+Compare actual access patterns against expected permissions. Identify privilege escalation risks,
+data leakage, inconsistent enforcement, and violations of the principle of least privilege. Provide
+a clear overall access control verdict and remediation recommendations.
+
+## Instructions
+
+### Step 1: Load all persona deliverables
+1. Read multi_persona_setup_deliverable.md to get:
+   - Persona inventory with expected permission levels
+   - Feature access comparison matrix from setup
+   - Critical permission boundaries identified
+2. Read multi_persona_record_deliverable.md to get:
+   - Recorded journeys with access level tags
+   - Primary persona's baseline behavior
+3. Read multi_persona_replay_deliverable.md to get:
+   - Per-persona replay results
+   - Step-by-step access classifications (SAME, RESTRICTED, BLOCKED, DIFFERENT_DATA, ERROR)
+   - Unexpected access findings
+
+### Step 2: Build the actual access matrix
+1. From the replay results, construct a complete access matrix:
+   - Rows: all personas (including primary)
+   - Columns: all resources/actions tested (pages, features, data operations)
+   - Cells: actual access level observed (FULL / PARTIAL / READ_ONLY / DENIED)
+2. Compare this actual matrix against the expected permissions from the personas configuration.
+3. Mark each cell as:
+   - CORRECT: Actual access matches expected permissions.
+   - OVER_PRIVILEGED: Persona has more access than expected (security risk).
+   - UNDER_PRIVILEGED: Persona has less access than expected (functionality gap).
+   - NOT_TESTED: This combination was not covered during testing.
+
+### Step 3: Analyze for privilege escalation
+1. Review all cases where a persona accessed resources above their expected privilege level.
+2. For each instance of over-privilege:
+   - Severity assessment: How sensitive is the accessible resource?
+   - Exploitability: Can this be exploited to cause harm (data theft, data modification)?
+   - Root cause: Is this a missing access control check, a misconfigured role, or a UI bug?
+3. Classify each finding:
+   - **Critical**: Access to admin functions, ability to modify other users' data, access to secrets
+   - **High**: Access to sensitive data views, ability to perform destructive actions
+   - **Medium**: Access to internal tools or reports not intended for the role
+   - **Low**: Minor permission leaks with low impact
+
+### Step 4: Analyze for data leakage
+1. Review all DIFFERENT_DATA classifications from replay results.
+2. For each case:
+   - What data was visible to the persona?
+   - What data should have been hidden based on their role?
+   - Is the data filtering happening server-side or client-side?
+   - Does the persona see records from other users, tenants, or organizations?
+3. Assess the sensitivity of any leaked data:
+   - PII (names, emails, phone numbers): High severity
+   - Business data (financials, analytics): Medium-High severity
+   - Non-sensitive data (public-facing content): Low severity
+
+### Step 5: Analyze enforcement mechanisms
+1. Review how access control is implemented across the application:
+   - **Server-side enforcement**: 403 responses, redirects, filtered API responses
+   - **Client-side enforcement**: Hidden buttons, disabled elements, missing navigation items
+   - **Hybrid enforcement**: Both server-side and client-side
+2. Identify areas with client-side only enforcement:
+   - These are security risks: a technically skilled user can bypass client-side restrictions.
+   - Verify by checking if hidden elements are absent from the DOM or just hidden via CSS.
+   - Verify by checking if direct URL access is blocked server-side.
+3. Assess enforcement consistency:
+   - Is the same resource protected consistently across all entry points?
+   - Can a restricted page be accessed via direct URL even if the navigation link is hidden?
+   - Can a restricted API endpoint be called even if the UI button is disabled?
+
+### Step 6: Analyze principle of least privilege
+1. For each persona, assess whether their actual access is the minimum necessary for their role.
+2. Identify any "bonus" access that does not serve the persona's function:
+   - A regular user who can see an admin settings page (even read-only)
+   - A viewer who can access edit forms (even if submit is disabled)
+   - A team member who can see other teams' data
+3. Recommend access reductions where the principle of least privilege is violated.
+
+### Step 7: Map findings to acceptance criteria
+1. Review the {ACCEPTANCE_CRITERIA} for any access control requirements.
+2. For each access control acceptance criterion:
+   - Identify the relevant test evidence from the replay results.
+   - Determine if the criterion is MET, NOT MET, or PARTIALLY MET.
+   - Reference specific screenshot evidence.
+
+### Step 8: Produce the final assessment
+1. **Overall Access Control Verdict**:
+   - **PASS**: No privilege escalation, no data leakage, all enforcement is server-side,
+     principle of least privilege observed.
+   - **CONDITIONAL PASS**: Minor issues found (low-severity over-privilege, client-side only
+     enforcement in non-sensitive areas). List conditions for acceptance.
+   - **FAIL**: Critical or high-severity privilege escalation, data leakage, or missing
+     enforcement. List blocking issues.
+2. **Risk summary**: Aggregate risk level across all findings.
+3. **Remediation roadmap**: Ordered list of fixes, from most critical to least.
+
+### Step 9: Handle gaps in analysis
+- If some personas could not be tested (login failure), note the coverage gap.
+- If some journeys were blocked, note which permission boundaries remain untested.
+- If time constraints limited testing, recommend additional testing areas.
+
+## Deliverable
+Save your analysis using the save_deliverable tool with deliverable type MULTI_PERSONA_ANALYSIS.
+Filename: multi_persona_analysis_deliverable.md
+
+The deliverable must include:
+- Executive summary with overall access control verdict (PASS/FAIL/CONDITIONAL PASS)
+- Complete access matrix: actual vs expected (persona x resource = CORRECT/OVER/UNDER/NOT_TESTED)
+- Privilege escalation findings with severity, evidence, and remediation
+- Data leakage findings with severity, evidence, and remediation
+- Enforcement mechanism analysis (server-side vs client-side)
+- Principle of least privilege assessment per persona
+- Acceptance criteria mapping
+- Remediation roadmap ordered by priority
+- Testing coverage notes and gaps
+- Screenshot evidence references for all findings

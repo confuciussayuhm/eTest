@@ -1,0 +1,9 @@
+# Pipeline Test: Discovery Agent (Minimal)
+
+Navigate to {TARGET_URL} using Playwright MCP browser tools.
+Take one screenshot of the landing page.
+Identify the page title and count the number of navigation links visible.
+
+Save a stub deliverable using save_deliverable with type DISCOVERY.
+Filename: discovery_deliverable.md
+Content: "Pipeline test - discovery complete. URL: {TARGET_URL}. Page title: [title]. Nav links: [count]."
