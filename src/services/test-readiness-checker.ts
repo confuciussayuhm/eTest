@@ -1,5 +1,5 @@
 /**
- * Test Readiness Checker Service - mirrors Shannon's ExploitationCheckerService
+ * Test Readiness Checker Service
  */
 
 import type { TestCategory, ExecutionDecision } from '../types/agents.js';

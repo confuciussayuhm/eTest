@@ -15,8 +15,7 @@ via browser automation, and produce a detailed UAT report — all from a single 
 ## What is Testicles?
 
 Testicles is an AI-driven UAT framework that treats your web application as a black box and autonomously
-performs end-to-end acceptance testing. It is based on [Shannon](https://github.com/KeygraphHQ/shannon)
-(an AI pentesting framework), re-targeted from security testing to user acceptance testing.
+performs end-to-end acceptance testing.
 
 - **31 AI agents** across **12 test categories**
 - **Claude Agent SDK** for orchestrating autonomous AI agents
@@ -208,7 +207,7 @@ See [`.env.example`](.env.example) for full provider configuration details.
 
 ## Architecture
 
-Testicles is built on the architecture of [Shannon](https://github.com/KeygraphHQ/shannon), an AI penetration testing framework, with a domain mapping from security testing to user acceptance testing.
+Testicles uses a multi-agent pipeline architecture purpose-built for autonomous black-box UAT.
 
 - **TypeScript** — fully typed codebase
 - **Temporal.io** — durable workflow orchestration with automatic retries and resumability
@@ -218,4 +217,4 @@ Testicles is built on the architecture of [Shannon](https://github.com/KeygraphH
 
 ## License
 
-TBD
+[MIT](LICENSE)

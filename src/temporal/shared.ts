@@ -1,8 +1,5 @@
 /**
  * Shared types and utilities for the Temporal layer.
- *
- * Adapted from Shannon's Temporal patterns for UAT (black-box testing against a URL).
- * Key difference: PipelineInput uses webUrl instead of repoPath.
  */
 
 import type { TestCategory } from '../types/agents.js';

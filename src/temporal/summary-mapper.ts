@@ -1,7 +1,5 @@
 /**
  * Maps a PipelineSummary to a WorkflowSummary for the audit subsystem.
- *
- * Copied from Shannon -- no domain-specific terms to change.
  */
 
 import type { PipelineSummary } from './shared.js';

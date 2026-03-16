@@ -2,11 +2,6 @@
  * save_deliverable MCP Tool
  *
  * Saves deliverable files for the Testicles UAT framework.
- * Adapted from Shannon's save-deliverable tool.
- *
- * Key differences from Shannon:
- * - No queue validation (UAT has no exploitation queues)
- * - Uses UAT DeliverableType enum (plan/exec pairs instead of analysis/queue/evidence)
  *
  * Uses factory pattern with targetDir closure, avoiding race conditions
  * when multiple workflows run in parallel.

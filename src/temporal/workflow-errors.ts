@@ -1,7 +1,6 @@
 /**
- * Workflow-level error formatting and unwrapping utilities.
- *
- * Same structure as Shannon but with UAT-specific remediation hints.
+ * Workflow-level error formatting and unwrapping utilities
+ * with UAT-specific remediation hints.
  */
 
 import { ApplicationFailure } from '@temporalio/workflow';

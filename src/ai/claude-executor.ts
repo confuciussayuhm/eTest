@@ -232,10 +232,9 @@ export async function validateAgentOutput(
 /**
  * Process an async message stream from the Claude SDK.
  *
- * Unlike Shannon's version (where dispatchMessage returns a control action),
- * the Testicles dispatchMessage is fire-and-forget for side effects (audit
- * logging, progress updates). This function drives the message loop itself,
- * extracting result/cost data directly from ResultMessage payloads.
+ * The dispatchMessage call is fire-and-forget for side effects (audit logging,
+ * progress updates). This function drives the message loop itself, extracting
+ * result/cost data directly from ResultMessage payloads.
  */
 async function processMessageStream(
   fullPrompt: string,

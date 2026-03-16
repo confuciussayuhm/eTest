@@ -3,9 +3,6 @@
  *
  * Each exported function is registered with the Temporal worker and called
  * by the workflow via proxyActivities.
- *
- * Adapted from Shannon: webUrl replaces repoPath, UATError replaces
- * PentestError, TestReadinessCheckerService replaces ExploitationCheckerService.
  */
 
 import { Context } from '@temporalio/activity';

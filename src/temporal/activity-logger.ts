@@ -1,8 +1,6 @@
 /**
  * Activity-scoped logger that bridges Temporal's activity context
  * to a simple ActivityLogger interface consumed by services.
- *
- * Copied from Shannon -- no domain-specific changes required.
  */
 
 import { Context } from '@temporalio/activity';

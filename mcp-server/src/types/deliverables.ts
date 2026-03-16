@@ -2,9 +2,7 @@
  * Deliverable Type Definitions for Testicles UAT Framework
  *
  * Maps deliverable types to their filenames for UAT testing categories.
- * Adapted from Shannon's pentest deliverables to UAT plan/exec structure.
- *
- * UAT has no exploitation queues - each category has a _PLAN and _EXEC phase.
+ * Each category has a _PLAN and _EXEC phase.
  */
 
 export enum DeliverableType {

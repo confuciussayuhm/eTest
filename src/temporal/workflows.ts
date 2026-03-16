@@ -1,11 +1,6 @@
 /**
  * Temporal Workflow Definitions for the Testicles UAT pipeline.
  *
- * Adapted from Shannon's pentestPipelineWorkflow.  Key structural change:
- *   - 12 plan+exec pipelines (not vuln+exploit)
- *   - Multi-persona pipeline runs concurrently with plan+exec phase
- *   - webUrl replaces repoPath everywhere
- *
  * Phases:
  *   1. Preflight validation
  *   2. Discovery (sequential)
@@ -41,7 +36,7 @@ import type { AgentMetrics } from '../types/metrics.js';
 import { formatWorkflowError } from './workflow-errors.js';
 
 // ---------------------------------------------------------------------------
-// Retry profiles (same 4 as Shannon)
+// Retry profiles
 // ---------------------------------------------------------------------------
 
 const PRODUCTION_RETRY = {
@@ -133,7 +128,7 @@ function buildPipelineConfigs(
 }
 
 // ---------------------------------------------------------------------------
-// Concurrency limiter (same pattern as Shannon)
+// Concurrency limiter
 // ---------------------------------------------------------------------------
 
 async function runWithConcurrencyLimit<T>(
