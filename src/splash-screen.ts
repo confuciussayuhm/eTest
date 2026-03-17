@@ -11,15 +11,15 @@ export const displaySplashScreen = async (): Promise<void> => {
     const packageJson = (await fs.readJSON(packagePath)) as { version?: string };
     const version = packageJson.version || '1.0.0';
 
-    // Create the main TESTICLES ASCII art using figlet
-    const testiclesText = figlet.textSync('TESTICLES', {
+    // Create the main ETEST ASCII art using figlet
+    const eTestText = figlet.textSync('ETEST', {
       font: 'ANSI Shadow',
       horizontalLayout: 'default',
       verticalLayout: 'default',
     });
 
-    // Apply gold/amber gradient to TESTICLES text
-    const gradientTesticles = gradient(['#D4A017', '#F4C542', '#FFD700', '#FFA500'])(testiclesText);
+    // Apply gold/amber gradient to ETEST text
+    const gradientETest = gradient(['#D4A017', '#F4C542', '#FFD700', '#FFA500'])(eTestText);
 
     // Create tagline and version info
     const tagline = chalk.bold.white('AI User Acceptance Testing Framework');
@@ -28,7 +28,7 @@ export const displaySplashScreen = async (): Promise<void> => {
 
     // Build the complete splash content
     const content = [
-      gradientTesticles,
+      gradientETest,
       '',
       chalk.bold.cyan('             +=============================================+'),
       chalk.bold.cyan('             |') + '  ' + tagline + '  ' + chalk.bold.cyan('|'),
@@ -74,7 +74,7 @@ export const displaySplashScreen = async (): Promise<void> => {
   } catch (error) {
     // Fallback to simple splash if anything fails
     const errMsg = error instanceof Error ? error.message : String(error);
-    console.log(chalk.yellow.bold('\n  TESTICLES - AI User Acceptance Testing Framework\n'));
+    console.log(chalk.yellow.bold('\n  ETEST - AI User Acceptance Testing Framework\n'));
     console.log(chalk.gray('  Could not load full splash screen:', errMsg));
     console.log('');
   }

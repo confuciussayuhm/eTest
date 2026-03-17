@@ -1,10 +1,4 @@
-# Testicles — AI UAT Framework
-
-> Named after the lesser-known Greek philosopher **Testicles of Thessaloniki** (*Testikleos*, c. 412–348 BC),
-> a contemporary of Aristotle who argued that knowledge could only be attained through rigorous, repeatable
-> observation. His sole surviving fragment reads: *"That which is not tested is not known"*
-> (*ho me dokimastheis ou gignosketai*). While Plato pursued truth through dialectic, Testicles insisted on
-> empirical verification — an approach that, perhaps unsurprisingly, failed to gain traction in 4th-century Athens.
+# eTest — AI UAT Framework
 
 An autonomous, black-box User Acceptance Testing framework powered by AI agents. Point it at a URL,
 and 31 AI agents collaboratively discover your application, plan tests across 12 categories, execute them
@@ -12,16 +6,16 @@ via browser automation, and produce a detailed UAT report — all from a single 
 
 ---
 
-## What is Testicles?
+## What is eTest?
 
-Testicles is an AI-driven UAT framework that treats your web application as a black box and autonomously
+eTest is an AI-driven UAT framework that treats your web application as a black box and autonomously
 performs end-to-end acceptance testing.
 
 - **31 AI agents** across **12 test categories**
 - **Claude Agent SDK** for orchestrating autonomous AI agents
 - **Temporal.io** for durable, resumable workflow execution
 - **Playwright MCP** for real browser interaction (screenshots, clicks, navigation)
-- **Single command**: `./testicles start URL=<url>`
+- **Single command**: `./etest start URL=<url>`
 
 ## Quick Start
 
@@ -34,15 +28,15 @@ performs end-to-end acceptance testing.
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/Testicles.git
-cd Testicles
+git clone https://github.com/confuciussayuhm/eTest.git
+cd eTest
 
 # Configure your API key
 cp .env.example .env
 # Edit .env and set ANTHROPIC_API_KEY=sk-ant-...
 
 # Run against a target
-./testicles start URL=https://example.com
+./etest start URL=https://example.com
 ```
 
 ### Monitor
@@ -52,7 +46,7 @@ Open the Temporal Web UI at [http://localhost:8233](http://localhost:8233) to wa
 ## How It Works
 
 ```
-                           ./testicles start URL=<url>
+                           ./etest start URL=<url>
                                       │
                               ┌───────▼────────┐
                               │   Preflight    │  Validate config, API keys, connectivity
@@ -140,19 +134,19 @@ rules:
 ```
 
 ```bash
-./testicles start URL=https://example.com CONFIG=./my-config.yaml
+./etest start URL=https://example.com CONFIG=./my-config.yaml
 ```
 
 ## CLI Reference
 
 ```
 Usage:
-  ./testicles start URL=<url>              Start a UAT workflow
-  ./testicles workspaces                   List all workspaces
-  ./testicles logs ID=<workflow-id>        Tail logs for a specific workflow
-  ./testicles stop                         Stop all containers
-  ./testicles query ID=<workflow-id>       Query workflow status
-  ./testicles help                         Show this help message
+  ./etest start URL=<url>              Start a UAT workflow
+  ./etest workspaces                   List all workspaces
+  ./etest logs ID=<workflow-id>        Tail logs for a specific workflow
+  ./etest stop                         Stop all containers
+  ./etest query ID=<workflow-id>       Query workflow status
+  ./etest help                         Show this help message
 
 Options for 'start':
   URL=<url>              Target URL to test (required)
@@ -173,25 +167,25 @@ Options for 'stop':
 
 ```bash
 # Basic UAT run
-./testicles start URL=https://example.com
+./etest start URL=https://example.com
 
 # With named workspace (resumable)
-./testicles start URL=https://example.com WORKSPACE=sprint-42
+./etest start URL=https://example.com WORKSPACE=sprint-42
 
 # With custom config and output directory
-./testicles start URL=https://example.com CONFIG=./config.yaml OUTPUT=./my-reports
+./etest start URL=https://example.com CONFIG=./config.yaml OUTPUT=./my-reports
 
 # Run only specific test categories
-./testicles start URL=https://example.com TESTS=auth,forms,navigation
+./etest start URL=https://example.com TESTS=auth,forms,navigation
 
 # Regression testing
-./testicles start URL=https://example.com REGRESSION=true CONFIG=./regression-config.yaml
+./etest start URL=https://example.com REGRESSION=true CONFIG=./regression-config.yaml
 
 # Monitor a running workflow
-./testicles logs ID=example.com_testicles-1234567890
+./etest logs ID=example.com_etest-1234567890
 
 # Clean shutdown
-./testicles stop CLEAN=true
+./etest stop CLEAN=true
 ```
 
 ## AI Provider Support
@@ -207,7 +201,7 @@ See [`.env.example`](.env.example) for full provider configuration details.
 
 ## Architecture
 
-Testicles uses a multi-agent pipeline architecture purpose-built for autonomous black-box UAT.
+eTest uses a multi-agent pipeline architecture purpose-built for autonomous black-box UAT.
 
 - **TypeScript** — fully typed codebase
 - **Temporal.io** — durable workflow orchestration with automatic retries and resumability

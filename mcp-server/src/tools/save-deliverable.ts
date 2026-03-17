@@ -1,7 +1,7 @@
 /**
  * save_deliverable MCP Tool
  *
- * Saves deliverable files for the Testicles UAT framework.
+ * Saves deliverable files for the eTest UAT framework.
  *
  * Uses factory pattern with targetDir closure, avoiding race conditions
  * when multiple workflows run in parallel.

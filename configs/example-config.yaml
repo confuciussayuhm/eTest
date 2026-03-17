@@ -1,5 +1,5 @@
 # =============================================================================
-# Testicles UAT Framework - Example Configuration
+# eTest UAT Framework - Example Configuration
 # =============================================================================
 # Copy this file and modify it for your specific testing needs.
 # All top-level sections are optional. Include only what you need.
@@ -133,7 +133,7 @@ rules:
 # Regression
 # -----------------------------------------------------------------------------
 # Re-run specific test cases from previous UAT runs to verify fixes.
-# Use with: ./testicles start URL=<url> CONFIG=<this-file> REGRESSION=true
+# Use with: ./etest start URL=<url> CONFIG=<this-file> REGRESSION=true
 regression:
   test_cases:
     - id: "REG-001"

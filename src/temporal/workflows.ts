@@ -1,5 +1,5 @@
 /**
- * Temporal Workflow Definitions for the Testicles UAT pipeline.
+ * Temporal Workflow Definitions for the eTest UAT pipeline.
  *
  * Phases:
  *   1. Preflight validation

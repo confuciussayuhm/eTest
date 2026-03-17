@@ -1,15 +1,15 @@
 /**
- * Temporal Worker for the Testicles UAT pipeline.
+ * Temporal Worker for the eTest UAT pipeline.
  *
  * Bundles workflow code and registers all activities, then connects
- * to the Temporal server and starts polling the 'testicles-pipeline'
+ * to the Temporal server and starts polling the 'etest-pipeline'
  * task queue.
  */
 
 import { NativeConnection, Worker, bundleWorkflowCode } from '@temporalio/worker';
 import * as activities from './activities.js';
 
-const TASK_QUEUE = 'testicles-pipeline';
+const TASK_QUEUE = 'etest-pipeline';
 
 async function run(): Promise<void> {
   // Bundle workflow code for the sandbox (V8 isolate)
@@ -31,11 +31,11 @@ async function run(): Promise<void> {
     maxConcurrentActivityTaskExecutions: 25,
   });
 
-  console.log(`Testicles worker started on task queue: ${TASK_QUEUE}`);
+  console.log(`eTest worker started on task queue: ${TASK_QUEUE}`);
   await worker.run();
 }
 
 run().catch((err) => {
-  console.error('Testicles worker failed:', err);
+  console.error('eTest worker failed:', err);
   process.exit(1);
 });

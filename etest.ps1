@@ -1,4 +1,4 @@
-# Testicles CLI - AI User Acceptance Testing Framework (PowerShell)
+# eTest CLI - AI User Acceptance Testing Framework (PowerShell)
 
 $ErrorActionPreference = "Stop"
 
@@ -45,22 +45,22 @@ $script:WORKSPACE = ""
 function Show-Help {
     Write-Host @"
 
-  ████████╗███████╗███████╗████████╗██╗ ██████╗██╗     ███████╗███████╗
-  ╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝██║██╔════╝██║     ██╔════╝██╔════╝
-     ██║   █████╗  ███████╗   ██║   ██║██║     ██║     █████╗  ███████╗
-     ██║   ██╔══╝  ╚════██║   ██║   ██║██║     ██║     ██╔══╝  ╚════██║
-     ██║   ███████╗███████║   ██║   ██║╚██████╗███████╗███████╗███████║
-     ╚═╝   ╚══════╝╚══════╝   ╚═╝   ╚═╝ ╚═════╝╚══════╝╚══════╝╚══════╝
+  ███████╗████████╗███████╗███████╗████████╗
+  ██╔════╝╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝
+  █████╗     ██║   █████╗  ███████╗   ██║
+  ██╔══╝     ██║   ██╔══╝  ╚════██║   ██║
+  ███████╗   ██║   ███████╗███████║   ██║
+  ╚══════╝   ╚═╝   ╚══════╝╚══════╝   ╚═╝
 
            AI User Acceptance Testing Framework
 
 Usage:
-  .\testicles.ps1 start URL=<url>              Start a UAT workflow
-  .\testicles.ps1 workspaces                   List all workspaces
-  .\testicles.ps1 logs ID=<workflow-id>        Tail logs for a specific workflow
-  .\testicles.ps1 stop                         Stop all containers
-  .\testicles.ps1 query ID=<workflow-id>       Query workflow status
-  .\testicles.ps1 help                         Show this help message
+  .\etest.ps1 start URL=<url>              Start a UAT workflow
+  .\etest.ps1 workspaces                   List all workspaces
+  .\etest.ps1 logs ID=<workflow-id>        Tail logs for a specific workflow
+  .\etest.ps1 stop                         Stop all containers
+  .\etest.ps1 query ID=<workflow-id>       Query workflow status
+  .\etest.ps1 help                         Show this help message
 
 Options for 'start':
   URL=<url>              Target URL to test (required)
@@ -77,15 +77,15 @@ Options for 'stop':
   CLEAN=true             Remove all data including volumes
 
 Examples:
-  .\testicles.ps1 start URL=https://example.com
-  .\testicles.ps1 start URL=https://example.com WORKSPACE=sprint-42
-  .\testicles.ps1 start URL=https://example.com CONFIG=./config.yaml
-  .\testicles.ps1 start URL=https://example.com OUTPUT=./my-reports
-  .\testicles.ps1 start URL=https://example.com REGRESSION=true CONFIG=./regression-config.yaml
-  .\testicles.ps1 workspaces
-  .\testicles.ps1 query ID=example.com_testicles-1234567890
-  .\testicles.ps1 logs ID=example.com_testicles-1234567890
-  .\testicles.ps1 stop CLEAN=true
+  .\etest.ps1 start URL=https://example.com
+  .\etest.ps1 start URL=https://example.com WORKSPACE=sprint-42
+  .\etest.ps1 start URL=https://example.com CONFIG=./config.yaml
+  .\etest.ps1 start URL=https://example.com OUTPUT=./my-reports
+  .\etest.ps1 start URL=https://example.com REGRESSION=true CONFIG=./regression-config.yaml
+  .\etest.ps1 workspaces
+  .\etest.ps1 query ID=example.com_etest-1234567890
+  .\etest.ps1 logs ID=example.com_etest-1234567890
+  .\etest.ps1 stop CLEAN=true
 
 Monitor workflows at http://localhost:8233
 "@
@@ -151,7 +151,7 @@ function Start-Containers {
     }
 
     # Need to start containers
-    Write-Host "Starting Testicles containers..."
+    Write-Host "Starting eTest containers..."
     if ($script:REBUILD -eq "true") {
         # Force rebuild without cache (use when code changes aren't being picked up)
         Write-Host "Rebuilding with --no-cache..."
@@ -181,7 +181,7 @@ function Invoke-Start {
     # Validate required vars
     if (-not $script:URL) {
         Write-Host "ERROR: URL is required"
-        Write-Host "Usage: .\testicles.ps1 start URL=<url>"
+        Write-Host "Usage: .\etest.ps1 start URL=<url>"
         exit 1
     }
 
@@ -304,7 +304,7 @@ function Invoke-Start {
         # Set ANTHROPIC_BASE_URL to route through router
         $env:ANTHROPIC_BASE_URL = "http://router:3456"
         # Set auth token to match router's APIKEY
-        $env:ANTHROPIC_AUTH_TOKEN = "testicles-router-key"
+        $env:ANTHROPIC_AUTH_TOKEN = "etest-router-key"
     }
 
     # Ensure audit-logs directory exists (no chmod on Windows)
@@ -329,7 +329,7 @@ function Invoke-Start {
     if ($script:REGRESSION -eq "true") { $execArgs += "--regression" }
     if ($script:TESTS) { $execArgs += @("--tests", $script:TESTS) }
 
-    # Run the client to submit workflow to testicles-pipeline task queue
+    # Run the client to submit workflow to etest-pipeline task queue
     $composeArgs = Get-ComposeArgs
     & docker compose @composeArgs exec -T worker node dist/temporal/client.js $script:URL @execArgs
 }
@@ -340,7 +340,7 @@ function Invoke-Query {
 
     if (-not $script:ID) {
         Write-Host "ERROR: ID is required"
-        Write-Host "Usage: .\testicles.ps1 query ID=<workflow-id>"
+        Write-Host "Usage: .\etest.ps1 query ID=<workflow-id>"
         exit 1
     }
 
@@ -357,7 +357,7 @@ function Invoke-Logs {
 
     if (-not $script:ID) {
         Write-Host "ERROR: ID is required"
-        Write-Host "Usage: .\testicles.ps1 logs ID=<workflow-id>"
+        Write-Host "Usage: .\etest.ps1 logs ID=<workflow-id>"
         exit 1
     }
 
@@ -374,9 +374,9 @@ function Invoke-Logs {
             $workflowLog = "./audit-logs/$workspaceId/workflow.log"
         }
 
-        # For named workspace IDs (e.g. workspace_testicles-123), check the workspace name
+        # For named workspace IDs (e.g. workspace_etest-123), check the workspace name
         if (-not $workflowLog) {
-            $workspaceId = $script:ID -replace '_testicles-.*$', ''
+            $workspaceId = $script:ID -replace '_etest-.*$', ''
             if (($workspaceId -ne $script:ID) -and (Test-Path "./audit-logs/$workspaceId/workflow.log")) {
                 $workflowLog = "./audit-logs/$workspaceId/workflow.log"
             }

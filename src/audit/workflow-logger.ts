@@ -45,7 +45,7 @@ export class WorkflowLogger {
   private async writeHeader(): Promise<void> {
     const header = [
       `================================================================================`,
-      `Testicles UAT - Workflow Log`,
+      `eTest UAT - Workflow Log`,
       `================================================================================`,
       `Workflow ID: ${this.sessionMetadata.id}`,
       `Target URL:  ${this.sessionMetadata.webUrl}`,

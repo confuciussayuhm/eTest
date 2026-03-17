@@ -1,5 +1,5 @@
 /**
- * Temporal Client for the Testicles UAT pipeline.
+ * Temporal Client for the eTest UAT pipeline.
  *
  * Parses CLI arguments, connects to the Temporal server, and starts
  * the uatPipelineWorkflow.  Optionally waits for the result.
@@ -32,7 +32,7 @@ import { formatWorkflowError } from './workflow-errors.js';
 // Constants
 // ---------------------------------------------------------------------------
 
-const TASK_QUEUE = 'testicles-pipeline';
+const TASK_QUEUE = 'etest-pipeline';
 const WORKFLOW_NAME = 'uatPipelineWorkflow';
 
 const VALID_TEST_CATEGORIES: readonly TestCategory[] = [
@@ -118,7 +118,7 @@ function parseCliArgs(args: string[]): CliOptions {
 
   const workflowId =
     values['workflow-id'] ??
-    `${hostname()}_testicles-${Date.now()}`;
+    `${hostname()}_etest-${Date.now()}`;
 
   return {
     webUrl,

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Workspace listing tool for Testicles.
+ * Workspace listing tool for eTest.
  *
  * Reads audit-logs/ directories, parses session.json files, and displays
  * a formatted table of all workspaces with status, duration, and cost.
@@ -96,14 +96,14 @@ async function listWorkspaces(): Promise<void> {
 
   if (workspaces.length === 0) {
     console.log('\nNo workspaces found.');
-    console.log('Run a pipeline first: ./testicles start URL=<url>');
+    console.log('Run a pipeline first: ./etest start URL=<url>');
     return;
   }
 
   // Sort by creation date (most recent first)
   workspaces.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-  console.log('\n=== Testicles Workspaces ===\n');
+  console.log('\n=== eTest Workspaces ===\n');
 
   // Column widths
   const nameWidth = 30;
@@ -156,7 +156,7 @@ async function listWorkspaces(): Promise<void> {
   console.log(`${summary}${resumeSummary}`);
 
   if (resumableCount > 0) {
-    console.log('\nResume with: ./testicles start URL=<url> WORKSPACE=<name>');
+    console.log('\nResume with: ./etest start URL=<url> WORKSPACE=<name>');
   }
 
   console.log();

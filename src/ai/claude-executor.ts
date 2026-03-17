@@ -4,8 +4,8 @@
  * Core execution engine for running Claude prompts with MCP server integration,
  * async message stream processing, output validation, and error handling.
  *
- * Adapted for the Testicles UAT framework: black-box testing against URLs
- * (no repoPath), uses the Testicles MCP helper server, and integrates with
+ * Adapted for the eTest UAT framework: black-box testing against URLs
+ * (no repoPath), uses the eTest MCP helper server, and integrates with
  * the existing dispatchMessage side-effect API for logging/progress.
  */
 
@@ -27,7 +27,7 @@ import {
 } from './message-handlers.js';
 import { AGENTS, AGENT_VALIDATORS, MCP_AGENT_MAPPING } from '../session-manager.js';
 // @ts-ignore - resolved at runtime after mcp-server build
-import { createTesticlesHelperServer } from '../../mcp-server/dist/index.js'; // eslint-disable-line
+import { createETestHelperServer } from '../../mcp-server/dist/index.js'; // eslint-disable-line
 import { AuditSession } from '../audit/index.js';
 import type { ActivityLogger } from '../types/activity-logger.js';
 import type { AgentName } from '../types/agents.js';
@@ -43,7 +43,7 @@ import type {
 // ---------------------------------------------------------------------------
 declare global {
   // eslint-disable-next-line no-var
-  var TESTICLES_DISABLE_LOADER: boolean | undefined;
+  var ETEST_DISABLE_LOADER: boolean | undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -88,15 +88,15 @@ interface StdioMcpServer {
 function buildMcpServers(
   agentName: string,
   sourceDir: string
-): Record<string, ReturnType<typeof createTesticlesHelperServer> | StdioMcpServer> {
-  const mcpServers: Record<string, ReturnType<typeof createTesticlesHelperServer> | StdioMcpServer> = {};
+): Record<string, ReturnType<typeof createETestHelperServer> | StdioMcpServer> {
+  const mcpServers: Record<string, ReturnType<typeof createETestHelperServer> | StdioMcpServer> = {};
 
-  // Testicles helper server is always present
+  // eTest helper server is always present
   try {
-    mcpServers['testicles-helper'] = createTesticlesHelperServer(sourceDir);
+    mcpServers['etest-helper'] = createETestHelperServer(sourceDir);
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : String(error);
-    console.error(`Warning: Failed to create testicles-helper MCP server: ${errMsg}`);
+    console.error(`Warning: Failed to create etest-helper MCP server: ${errMsg}`);
   }
 
   // Playwright MCP server per agent (assigned via session-manager mapping)
@@ -104,7 +104,7 @@ function buildMcpServers(
   if (agentDef) {
     const playwrightMcpName = MCP_AGENT_MAPPING[agentDef.promptTemplate] || null;
     if (playwrightMcpName) {
-      const isDocker = process.env['TESTICLES_DOCKER'] === 'true';
+      const isDocker = process.env['ETEST_DOCKER'] === 'true';
       const userDataDir = `/tmp/${playwrightMcpName}`;
 
       const mcpArgs: string[] = [
@@ -163,7 +163,7 @@ export async function writeErrorLog(
       agent: agentName,
       error,
       context,
-      pipeline: 'testicles-pipeline',
+      pipeline: 'etest-pipeline',
     };
     await fs.writeFile(logFile, JSON.stringify(entry, null, 2), 'utf8');
   } catch {
@@ -226,7 +226,7 @@ export async function validateAgentOutput(
 }
 
 // ---------------------------------------------------------------------------
-// Message stream processing (adapted for Testicles dispatchMessage API)
+// Message stream processing (adapted for eTest dispatchMessage API)
 // ---------------------------------------------------------------------------
 
 /**
@@ -261,7 +261,7 @@ async function processMessageStream(
   for await (const message of query({ prompt: fullPrompt, options })) {
     // Heartbeat logging when progress indicator is disabled (CI / Docker)
     const now = Date.now();
-    if (global.TESTICLES_DISABLE_LOADER && now - lastHeartbeat > HEARTBEAT_INTERVAL) {
+    if (global.ETEST_DISABLE_LOADER && now - lastHeartbeat > HEARTBEAT_INTERVAL) {
       deps.logger.info(
         `[${Math.floor((now - timer.startTime) / 1000)}s] ${deps.description} running... (Turn ${turnCount})`
       );
@@ -346,7 +346,7 @@ async function processMessageStream(
  *
  * @param prompt       - The fully-rendered prompt text to send to Claude.
  * @param sourceDir    - Deliverables output directory (audit output path).
- *                       This is NOT a repo path; Testicles is black-box against URLs.
+ *                       This is NOT a repo path; eTest is black-box against URLs.
  * @param sessionContext - An opaque session identifier for correlation.
  * @param agentName    - The agent name (key into AGENTS registry).
  * @param description  - Human-readable description of the execution.
@@ -367,7 +367,7 @@ export async function runClaudePrompt(
   const timer = new Timer(`claude-prompt:${agentName}`);
   const model = resolveModel(modelTier);
   const actualModel = getActualModelName(model);
-  const disableLoader = process.env['TESTICLES_DISABLE_LOADER'] === 'true';
+  const disableLoader = process.env['ETEST_DISABLE_LOADER'] === 'true';
   const progressManager = createProgressManager(!disableLoader);
   const auditLogger = createAuditLogger(auditSession);
 

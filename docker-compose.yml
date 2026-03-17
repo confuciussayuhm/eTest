@@ -51,7 +51,7 @@ services:
       - seccomp:unconfined
 
   # Optional: claude-code-router for multi-model support
-  # Start with: ROUTER=true ./testicles start ...
+  # Start with: ROUTER=true ./etest start ...
   router:
     image: node:22-slim
     profiles: ["router"]

@@ -1,7 +1,7 @@
 /**
  * OAuth token refresh utility for Claude Code credentials.
  *
- * When Testicles runs inside Docker with OAuth tokens passed as env vars
+ * When eTest runs inside Docker with OAuth tokens passed as env vars
  * (extracted from ~/.claude/.credentials.json by the host-side shell script),
  * this utility checks token expiry and refreshes the access token before each
  * agent activity. This prevents 401 errors during long-running UAT workflows.

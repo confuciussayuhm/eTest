@@ -1,5 +1,5 @@
 #
-# Multi-stage Dockerfile for Testicles UAT Agent
+# Multi-stage Dockerfile for eTest UAT Agent
 #
 
 # =============================================================================
@@ -98,7 +98,7 @@ USER uat
 # Set environment variables
 ENV NODE_ENV=production
 ENV PATH="/usr/local/bin:$PATH"
-ENV TESTICLES_DOCKER=true
+ENV ETEST_DOCKER=true
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
 ENV npm_config_cache=/tmp/.npm

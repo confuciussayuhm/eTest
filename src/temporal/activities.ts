@@ -1,5 +1,5 @@
 /**
- * Temporal Activity implementations for the Testicles UAT pipeline.
+ * Temporal Activity implementations for the eTest UAT pipeline.
  *
  * Each exported function is registered with the Temporal worker and called
  * by the workflow via proxyActivities.
@@ -336,7 +336,7 @@ export async function loadResumeState(
   logger.info(`Loading resume state from workspace: ${workspaceName}`);
 
   const { fs, path } = await import('zx');
-  const stateFile = path.join(workspaceName, '.testicles-state.json');
+  const stateFile = path.join(workspaceName, '.etest-state.json');
 
   if (!await fs.pathExists(stateFile)) {
     throw ApplicationFailure.nonRetryable(

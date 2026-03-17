@@ -1,5 +1,5 @@
 /**
- * Deliverable Type Definitions for Testicles UAT Framework
+ * Deliverable Type Definitions for eTest UAT Framework
  *
  * Maps deliverable types to their filenames for UAT testing categories.
  * Each category has a _PLAN and _EXEC phase.

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Testicles CLI - AI User Acceptance Testing Framework
+# eTest CLI - AI User Acceptance Testing Framework
 
 set -e
 
@@ -30,22 +30,22 @@ fi
 show_help() {
   cat << 'EOF'
 
-  ████████╗███████╗███████╗████████╗██╗ ██████╗██╗     ███████╗███████╗
-  ╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝██║██╔════╝██║     ██╔════╝██╔════╝
-     ██║   █████╗  ███████╗   ██║   ██║██║     ██║     █████╗  ███████╗
-     ██║   ██╔══╝  ╚════██║   ██║   ██║██║     ██║     ██╔══╝  ╚════██║
-     ██║   ███████╗███████║   ██║   ██║╚██████╗███████╗███████╗███████║
-     ╚═╝   ╚══════╝╚══════╝   ╚═╝   ╚═╝ ╚═════╝╚══════╝╚══════╝╚══════╝
+  ███████╗████████╗███████╗███████╗████████╗
+  ██╔════╝╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝
+  █████╗     ██║   █████╗  ███████╗   ██║
+  ██╔══╝     ██║   ██╔══╝  ╚════██║   ██║
+  ███████╗   ██║   ███████╗███████║   ██║
+  ╚══════╝   ╚═╝   ╚══════╝╚══════╝   ╚═╝
 
            AI User Acceptance Testing Framework
 
 Usage:
-  ./testicles start URL=<url>              Start a UAT workflow
-  ./testicles workspaces                   List all workspaces
-  ./testicles logs ID=<workflow-id>        Tail logs for a specific workflow
-  ./testicles stop                         Stop all containers
-  ./testicles query ID=<workflow-id>       Query workflow status
-  ./testicles help                         Show this help message
+  ./etest start URL=<url>              Start a UAT workflow
+  ./etest workspaces                   List all workspaces
+  ./etest logs ID=<workflow-id>        Tail logs for a specific workflow
+  ./etest stop                         Stop all containers
+  ./etest query ID=<workflow-id>       Query workflow status
+  ./etest help                         Show this help message
 
 Options for 'start':
   URL=<url>              Target URL to test (required)
@@ -62,15 +62,15 @@ Options for 'stop':
   CLEAN=true             Remove all data including volumes
 
 Examples:
-  ./testicles start URL=https://example.com
-  ./testicles start URL=https://example.com WORKSPACE=sprint-42
-  ./testicles start URL=https://example.com CONFIG=./config.yaml
-  ./testicles start URL=https://example.com OUTPUT=./my-reports
-  ./testicles start URL=https://example.com REGRESSION=true CONFIG=./regression-config.yaml
-  ./testicles workspaces
-  ./testicles query ID=example.com_testicles-1234567890
-  ./testicles logs ID=example.com_testicles-1234567890
-  ./testicles stop CLEAN=true
+  ./etest start URL=https://example.com
+  ./etest start URL=https://example.com WORKSPACE=sprint-42
+  ./etest start URL=https://example.com CONFIG=./config.yaml
+  ./etest start URL=https://example.com OUTPUT=./my-reports
+  ./etest start URL=https://example.com REGRESSION=true CONFIG=./regression-config.yaml
+  ./etest workspaces
+  ./etest query ID=example.com_etest-1234567890
+  ./etest logs ID=example.com_etest-1234567890
+  ./etest stop CLEAN=true
 
 Monitor workflows at http://localhost:8233
 EOF
@@ -116,7 +116,7 @@ ensure_containers() {
   fi
 
   # Need to start containers
-  echo "Starting Testicles containers..."
+  echo "Starting eTest containers..."
   if [ "$REBUILD" = "true" ]; then
     # Force rebuild without cache (use when code changes aren't being picked up)
     echo "Rebuilding with --no-cache..."
@@ -145,7 +145,7 @@ cmd_start() {
   # Validate required vars
   if [ -z "$URL" ]; then
     echo "ERROR: URL is required"
-    echo "Usage: ./testicles start URL=<url>"
+    echo "Usage: ./etest start URL=<url>"
     exit 1
   fi
 
@@ -253,7 +253,7 @@ cmd_start() {
     # Set ANTHROPIC_BASE_URL to route through router
     export ANTHROPIC_BASE_URL="http://router:3456"
     # Set auth token to match router's APIKEY
-    export ANTHROPIC_AUTH_TOKEN="testicles-router-key"
+    export ANTHROPIC_AUTH_TOKEN="etest-router-key"
   fi
 
   # Ensure audit-logs directory exists with write permissions for container user (UID 1001)
@@ -278,7 +278,7 @@ cmd_start() {
   [ "$REGRESSION" = "true" ] && ARGS="$ARGS --regression"
   [ -n "$TESTS" ] && ARGS="$ARGS --tests $TESTS"
 
-  # Run the client to submit workflow to testicles-pipeline task queue
+  # Run the client to submit workflow to etest-pipeline task queue
   docker compose -f "$COMPOSE_FILE" $COMPOSE_OVERRIDE exec -T worker \
     node dist/temporal/client.js "$URL" $ARGS
 }
@@ -288,7 +288,7 @@ cmd_query() {
 
   if [ -z "$ID" ]; then
     echo "ERROR: ID is required"
-    echo "Usage: ./testicles query ID=<workflow-id>"
+    echo "Usage: ./etest query ID=<workflow-id>"
     exit 1
   fi
 
@@ -304,7 +304,7 @@ cmd_logs() {
 
   if [ -z "$ID" ]; then
     echo "ERROR: ID is required"
-    echo "Usage: ./testicles logs ID=<workflow-id>"
+    echo "Usage: ./etest logs ID=<workflow-id>"
     exit 1
   fi
 
@@ -320,9 +320,9 @@ cmd_logs() {
       WORKFLOW_LOG="./audit-logs/${WORKSPACE_ID}/workflow.log"
     fi
 
-    # For named workspace IDs (e.g. workspace_testicles-123), check the workspace name
+    # For named workspace IDs (e.g. workspace_etest-123), check the workspace name
     if [ -z "$WORKFLOW_LOG" ]; then
-      WORKSPACE_ID="${ID%%_testicles-*}"
+      WORKSPACE_ID="${ID%%_etest-*}"
       if [ "$WORKSPACE_ID" != "$ID" ] && [ -f "./audit-logs/${WORKSPACE_ID}/workflow.log" ]; then
         WORKFLOW_LOG="./audit-logs/${WORKSPACE_ID}/workflow.log"
       fi
